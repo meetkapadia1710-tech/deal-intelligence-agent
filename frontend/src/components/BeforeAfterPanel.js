@@ -4,6 +4,7 @@ import { XCircle, CheckCircle2, ArrowRight, Loader2, RefreshCcw } from "lucide-r
 import { apiPost } from "../api/apiClient";
 import { fadeThroughVariants, staggerContainer, staggerItem } from "../theme/motion";
 import { Ripple } from "./ui/Ripple";
+import ReactMarkdown from "react-markdown";
 
 const BA_EXAMPLES = [
   "What did the CFO say about pricing?",
@@ -134,7 +135,9 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
                     <div className="ba-col-sub">Generic AI — no context</div>
                   </div>
                 </div>
-                <pre className="ba-text">{result.noMem.answer}</pre>
+                <div className="ba-text markdown-body">
+                  <ReactMarkdown>{result.noMem.answer}</ReactMarkdown>
+                </div>
               </div>
               <div className="ba-col ba-col-good">
                 <div className="ba-col-header">
@@ -149,7 +152,9 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
                     {result.withMem.memoriesCount} recalled
                   </span>
                 </div>
-                <pre className="ba-text">{result.withMem.answer}</pre>
+                <div className="ba-text markdown-body">
+                  <ReactMarkdown>{result.withMem.answer}</ReactMarkdown>
+                </div>
               </div>
             </div>
           </motion.div>

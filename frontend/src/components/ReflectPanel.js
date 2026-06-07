@@ -4,6 +4,7 @@ import { Sparkles, FileText, AlertTriangle, Users, ArrowRight, Loader2 } from "l
 import { apiPost } from "../api/apiClient";
 import { fadeThroughVariants } from "../theme/motion";
 import { Ripple } from "./ui/Ripple";
+import ReactMarkdown from "react-markdown";
 
 export default function ReflectPanel({ dealId, dealName }) {
   const [reflection, setReflection] = useState("");
@@ -104,9 +105,9 @@ export default function ReflectPanel({ dealId, dealName }) {
             exit="exit"
             style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 24, marginTop: 24 }}
           >
-            <pre style={{ fontFamily: 'var(--font-sans)', fontSize: 15, lineHeight: 1.8, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
-              {reflection}
-            </pre>
+            <div className="markdown-body" style={{ fontSize: 15, color: 'var(--text-primary)' }}>
+              <ReactMarkdown>{reflection}</ReactMarkdown>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

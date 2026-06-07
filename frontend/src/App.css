@@ -774,5 +774,24 @@ body {
 }
 .ba-reset-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
 .ba-question-row { margin-bottom: var(--space-24); font-size: 15px; }
+.chat-input::placeholder { color: var(--text-muted); }
+.chat-input:focus { outline: none; }
+
+/* ── Markdown Global Styles ────────────────────────────────────────────────── */
+.markdown-body {
+  font-family: var(--font-sans);
+  font-size: inherit;
+  line-height: 1.6;
+  color: inherit;
+  word-wrap: break-word;
+}
+.markdown-body p { margin-bottom: 12px; }
+.markdown-body p:last-child { margin-bottom: 0; }
+.markdown-body ul, .markdown-body ol { margin-left: 20px; margin-bottom: 12px; }
+.markdown-body ul:last-child, .markdown-body ol:last-child { margin-bottom: 0; }
+.markdown-body li { margin-bottom: 4px; }
+.markdown-body strong { font-weight: 700; color: var(--text-primary); }
+.markdown-body em { font-style: italic; }
+
 .ba-question-label { color: var(--text-muted); margin-right: var(--space-8); }
 .ba-question-text { font-weight: 600; font-style: italic; }

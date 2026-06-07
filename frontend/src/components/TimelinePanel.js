@@ -4,6 +4,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { apiGet } from "../api/apiClient";
 import { parseMemoryEntry } from "../utils/utils";
 import { staggerContainer, staggerItem } from "../theme/motion";
+import ReactMarkdown from "react-markdown";
 
 export default function TimelinePanel({ dealId, dealName }) {
   const [entries, setEntries] = useState([]);
@@ -97,9 +98,9 @@ export default function TimelinePanel({ dealId, dealName }) {
                     {date && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{date}</span>}
                   </div>
                 </div>
-                <pre style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-sans)' }}>
-                  {cleaned}
-                </pre>
+                <div className="markdown-body" style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+                  <ReactMarkdown>{cleaned}</ReactMarkdown>
+                </div>
               </div>
             </motion.div>
           );

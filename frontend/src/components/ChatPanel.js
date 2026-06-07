@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, Sparkles } from "lucide-react";
 import { apiPost } from "../api/apiClient";
 import { chatMsgUserVariants, chatMsgAgentVariants } from "../theme/motion";
+import ReactMarkdown from "react-markdown";
 
 function ChatMessage({ msg }) {
   const isUser = msg.role === "user";
@@ -31,7 +32,9 @@ function ChatMessage({ msg }) {
         )}
       </div>
       <div className="msg-bubble">
-        <pre className="msg-text">{msg.content}</pre>
+        <div className="msg-text markdown-body">
+          <ReactMarkdown>{msg.content}</ReactMarkdown>
+        </div>
       </div>
     </motion.div>
   );
