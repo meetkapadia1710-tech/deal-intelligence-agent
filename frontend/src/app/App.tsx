@@ -10,13 +10,15 @@ import AnalyticsPanel from "features/analytics/AnalyticsPanel";
 import ChatPanel from "features/chat/ChatPanel";
 import DealDetailsPanel from "features/deals/DealDetailsPanel";
 import { SignedIn, SignedOut, SignIn, useAuth } from "@clerk/clerk-react";
-import { setGlobalAuthToken } from "services/apiClient";
+import { setGlobalAuthTokenFn } from "services/apiClient";
+import { motion, AnimatePresence } from "framer-motion";
+import { pageTransition } from "lib/motion";
 
 export default function App() {
   const { getToken } = useAuth();
   
   useEffect(() => {
-    getToken().then(token => setGlobalAuthToken(token));
+    setGlobalAuthTokenFn(() => getToken());
   }, [getToken]);
 
   const [tab, setTab] = useState("dashboard");
@@ -43,7 +45,7 @@ export default function App() {
     <>
       <SignedOut>
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc' }}>
-          <SignIn routing="hash" />
+          <SignIn fallbackRedirectUrl="/" signUpFallbackRedirectUrl="/" />
         </div>
       </SignedOut>
       <SignedIn>
@@ -56,11 +58,33 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="main-content" style={{ flex: 1, backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        {tab === "dashboard" && <DashboardPanel onFocusChat={setActiveDeal} onViewDetails={(deal: any) => { setActiveDeal(deal); setTab("deal-details"); }} />}
-        {tab === "active-deals" && <ActiveDealsPanel onViewDetails={(deal: any) => { setActiveDeal(deal); setTab("deal-details"); }} />}
-        {tab === "intelligence" && <IntelligencePanel />}
-        {tab === "deal-details" && <DealDetailsPanel deal={activeDeal} onBack={() => { setActiveDeal(null); setTab("active-deals"); }} />}
-        {tab === "settings" && <SettingsPanel />}
+        <AnimatePresence mode="wait">
+          {tab === "dashboard" && (
+            <motion.div key="dashboard" {...pageTransition} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <DashboardPanel onFocusChat={setActiveDeal} onViewDetails={(deal: any) => { setActiveDeal(deal); setTab("deal-details"); }} />
+            </motion.div>
+          )}
+          {tab === "active-deals" && (
+            <motion.div key="active-deals" {...pageTransition} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <ActiveDealsPanel onViewDetails={(deal: any) => { setActiveDeal(deal); setTab("deal-details"); }} />
+            </motion.div>
+          )}
+          {tab === "intelligence" && (
+            <motion.div key="intelligence" {...pageTransition} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <IntelligencePanel />
+            </motion.div>
+          )}
+          {tab === "deal-details" && (
+            <motion.div key="deal-details" {...pageTransition} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <DealDetailsPanel deal={activeDeal} onBack={() => { setActiveDeal(null); setTab("active-deals"); }} />
+            </motion.div>
+          )}
+          {tab === "settings" && (
+            <motion.div key="settings" {...pageTransition} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <SettingsPanel />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Right Sidebar - Chat */}

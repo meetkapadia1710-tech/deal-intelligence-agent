@@ -5,8 +5,8 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.61.8",
     "@types/node": "^25.9.2",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
     "react": "^18.2.0",
@@ -21,7 +21,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build"
   },
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3002",
   "browserslist": {
     "production": [
       ">0.2%",
