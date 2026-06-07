@@ -257,12 +257,92 @@ app.post("/api/seed", async (req, res) => {
   }
 });
 
+// POST /api/compare — no-memory vs with-memory side by side
+// Body: { dealId, dealName, question }
+app.post("/api/compare", async (req, res) => {
+  const { dealId, dealName, question } = req.body;
+  if (!dealId || !question) {
+    return res.status(400).json({ error: "dealId and question are required" });
+  }
+
+  try {
+    const [noMemCompletion, memories] = await Promise.all([
+      groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: "You are a generic sales assistant. You have no knowledge of any specific deals, customers, or past interactions." },
+          { role: "user", content: question },
+        ],
+        temperature: 0.7,
+        max_tokens: 350,
+      }),
+      hindsight.recall(BANK_ID, question, {
+        tags: [dealId],
+        tagsMatch: "all_strict",
+        budget: "mid",
+      }),
+    ]);
+
+    const memoryText =
+      memories.results?.map((m) => m.text).join("\n---\n") ||
+      "No prior interactions found.";
+
+    const withMemCompletion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert sales coach for the deal "${dealName || dealId}". You have full memory of every past interaction. Always reference specific names, numbers, and facts from the deal history.`,
+        },
+        {
+          role: "user",
+          content: `Deal history:\n${memoryText}\n\nQuestion: ${question}`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 350,
+    });
+
+    res.json({
+      noMemory: noMemCompletion.choices[0]?.message?.content || "No response.",
+      withMemory: withMemCompletion.choices[0]?.message?.content || "No response.",
+      memoriesCount: memories.results?.length || 0,
+    });
+  } catch (err) {
+    console.error("compare error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/timeline/:dealId — all stored memories for a deal (deal diary)
+app.get("/api/timeline/:dealId", async (req, res) => {
+  const { dealId } = req.params;
+  try {
+    const memories = await hindsight.recall(
+      BANK_ID,
+      "interaction call email meeting stakeholder objection timeline",
+      { tags: [dealId], tagsMatch: "all_strict", budget: "high" }
+    );
+    res.json({ dealId, entries: memories.results || [] });
+  } catch (err) {
+    console.error("timeline error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, async () => {
   console.log(`🚀 Deal Intelligence API running on http://localhost:${PORT}`);
   await initBank();
+});
+
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`\n❌ Port ${PORT} is already in use.\n   Run this in PowerShell to free it:\n   Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT} | Select -First 1 -Expand OwningProcess) -Force\n`);
+    process.exit(1);
+  }
 });
 
 process.on("SIGINT", () => { server.close(); process.exit(0); });
