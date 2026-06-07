@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { retainMemory, recallMemories } from "../services/memory.service.js";
+import { generateChatCompletion } from "../services/ai.service.js";
 import { prisma } from "../utils/db.js";
 
 export async function listDeals(req: Request, res: Response) { 
@@ -27,6 +28,55 @@ export async function getContext(req: Request, res: Response): Promise<void> {
     const entries = await recallMemories(req.params.dealId as string, (req.query.query as string) || "deal interactions objections stakeholders", "mid");
     res.json({ dealId: req.params.dealId, memories: entries });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
+}
+
+export async function getNextAction(req: Request, res: Response): Promise<void> {
+  try {
+    const { dealId } = req.params;
+    const memories = await recallMemories(
+      dealId,
+      "interactions objections stakeholders blockers concerns next steps follow-up",
+      "high"
+    );
+
+    if (memories.length === 0) {
+      res.json({ dealId, actions: [], empty: true });
+      return;
+    }
+
+    const memoryText = memories.map((m: any) => m.text).join("\n---\n");
+
+    const systemPrompt = `You are an expert sales strategist. Analyze the deal history and return ONLY a JSON object with the 3 most impactful next actions the rep should take. No explanation, no markdown fences, just pure JSON.
+
+Required format:
+{
+  "actions": [
+    {
+      "priority": 1,
+      "category": "Objection Handling",
+      "title": "Specific actionable step in 6-10 words",
+      "reasoning": "Why this is critical based on the deal history, 1-2 sentences.",
+      "urgency": "High",
+      "timeframe": "Today"
+    }
+  ]
+}
+
+Valid category values: "Objection Handling", "Relationship Building", "Pricing", "Technical", "Legal", "Follow-up"
+Valid urgency values: "High", "Medium", "Low"
+Valid timeframe values: "Today", "This Week", "This Month"`;
+
+    const userPrompt = `Deal history:\n${memoryText}\n\nReturn JSON with the 3 best next actions.`;
+    const raw = await generateChatCompletion(systemPrompt, userPrompt, 700);
+
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI returned non-JSON response");
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    res.json({ dealId, actions: parsed.actions || [] });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 }
 
 export async function seedDemoData(req: Request, res: Response): Promise<void> {

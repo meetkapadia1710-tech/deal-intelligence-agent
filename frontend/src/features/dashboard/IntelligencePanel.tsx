@@ -1,67 +1,60 @@
-import React from "react";
-import { Lightbulb, Database } from "lucide-react";
+import React, { useState } from "react";
+import { Lightbulb, Database, Activity, Target, Zap, CheckCircle2 } from "lucide-react";
 import { apiPost } from "services/apiClient";
+import { motion, AnimatePresence } from "framer-motion";
+import { motionTokens } from "lib/motion";
+import { RadarPanel } from "./components/RadarPanel";
+import { ReasoningPipeline } from "./components/ReasoningPipeline";
 
 export default function IntelligencePanel() {
-  const [seeding, setSeeding] = React.useState(false);
-  const [seedDone, setSeedDone] = React.useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const [seedDone, setSeedDone] = useState(false);
 
   async function handleSeed() {
     setSeeding(true);
-    await apiPost("/seed", {});
-    setSeeding(false);
-    setSeedDone(true);
-    setTimeout(() => setSeedDone(false), 3000);
+    try {
+      const res = await apiPost("/seed", {});
+      if (res.error) throw new Error(res.error);
+      setSeedDone(true);
+      setTimeout(() => setSeedDone(false), 3000);
+    } catch (err) {
+      console.error("Seed failed:", err);
+      alert("Failed to seed data. Please ensure the backend is running.");
+    } finally {
+      setSeeding(false);
+    }
   }
 
   return (
-    <div style={{ padding: '32px 48px' }}>
-      <h1 className="dashboard-title" style={{ marginBottom: 32 }}>Global Intelligence</h1>
+    <div style={{ padding: '32px 48px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <h1 className="dashboard-title">Market Intelligence Engine</h1>
       
-      <div style={{ 
-        background: '#fff', 
-        padding: 32, 
-        borderRadius: 12, 
-        border: '1px solid #e2e8f0',
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 16
-      }}>
-        <div style={{ padding: 16, background: '#fef08a', borderRadius: '50%', color: '#ca8a04' }}>
-          <Lightbulb size={32} />
-        </div>
-        <h2 style={{ fontSize: 20, color: '#0f172a' }}>Intelligence Engine</h2>
-        <p style={{ color: '#64748b', maxWidth: 400, lineHeight: 1.5 }}>
-          The Intelligence Engine continuously monitors your Active Deals to surface risks, sentiment shifts, and actionable insights.
-        </p>
-        
-        <div style={{ marginTop: 24, padding: 24, background: '#f8fafc', borderRadius: 8, width: '100%', maxWidth: 600, border: '1px dashed #cbd5e1' }}>
-          <h3 style={{ fontSize: 16, marginBottom: 16, color: '#0f172a' }}>Data Management</h3>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>Need more insights? Seed the database with demo interactions.</p>
-          <button
-            onClick={handleSeed}
-            disabled={seeding || seedDone}
-            style={{
-              padding: '10px 20px',
-              background: '#3b82f6',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              margin: '0 auto'
-            }}
-          >
-            <Database size={16} />
-            {seedDone ? "Demo data loaded" : seeding ? "Seeding..." : "Load Demo Data"}
-          </button>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+        <RadarPanel />
+        <ReasoningPipeline />
       </div>
+
+      {/* Database Mgt Panel */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...motionTokens.springSmooth, delay: 0.2 }}
+        style={{ background: '#fff', padding: 32, borderRadius: 16, border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <div>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Database size={18} color="#3b82f6" /> System Data Store
+          </h3>
+          <p style={{ color: '#64748b', fontSize: 14 }}>Seed the database with demo deals and synthetic interactions to test intelligence features.</p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          onClick={handleSeed}
+          disabled={seeding || seedDone}
+          style={{ padding: '12px 24px', background: seedDone ? '#10b981' : '#0f172a', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+        >
+          {seedDone ? <CheckCircle2 size={18} /> : <Database size={18} />}
+          {seedDone ? "Data Loaded" : seeding ? "Synthesizing..." : "Seed Demo Data"}
+        </motion.button>
+      </motion.div>
     </div>
   );
 }

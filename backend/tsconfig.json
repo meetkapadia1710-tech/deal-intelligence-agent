@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
@@ -12,5 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist"
   },
-  "include": ["src/**/*", "server.ts"]
+  "include": ["src/**/*", "server.ts", "tests/**/*"]
 }
