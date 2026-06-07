@@ -152,7 +152,7 @@ export default function DealDetailsPanel({ deal, onBack }: any) {
                 <motion.div variants={itemReveal} key={idx} style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, color: '#64748b', fontSize: 13 }}>
                     <Clock size={14} />
-                    <span>{new Date(entry.timestamp).toLocaleString()}</span>
+                    <span>{entry.metadata?.timestamp ? new Date(entry.metadata.timestamp).toLocaleDateString() : 'Recent'}</span>
                     {entry.metadata?.stakeholder && (
                       <>
                         <span style={{ margin: '0 8px' }}>|</span>

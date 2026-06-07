@@ -297,36 +297,42 @@ app.post("/api/seed", async (req, res) => {
       dealId: "acme-001",
       dealName: "Acme Corp",
       stakeholder: "Priya Sharma (CFO)",
+      daysAgo: 14,
       note: "Had a call with Priya Sharma (CFO). She is worried about implementation timeline — wants deployment within 6 weeks. Also pushed back hard on pricing, requesting a 20% discount. Sentiment was cautious but interested.",
     },
     {
       dealId: "acme-001",
       dealName: "Acme Corp",
       stakeholder: "Raj Mehta (CTO)",
+      daysAgo: 10,
       note: "Call with Raj Mehta (CTO). Technical concerns about API integration with their legacy SAP system. Wants a sandbox environment to test before signing. Positive about the product itself — said it was the best solution they had seen.",
     },
     {
       dealId: "acme-001",
       dealName: "Acme Corp",
       stakeholder: "Priya Sharma (CFO)",
+      daysAgo: 7,
       note: "Follow-up email from Priya. She reiterated the 20% discount request and added that the board needs ROI justification before approving. Budget is locked at $80k annually — our list price is $95k.",
     },
     {
       dealId: "acme-001",
       dealName: "Acme Corp",
       stakeholder: "Neha Kapoor (Procurement)",
+      daysAgo: 2,
       note: "Intro call with Neha Kapoor from procurement. She handles all vendor contracts. Needs MSA, DPA, and SOC2 report before they can proceed. Said legal review takes 3 weeks minimum.",
     },
     {
       dealId: "globex-002",
       dealName: "Globex Industries",
       stakeholder: "David Chen (VP Sales)",
+      daysAgo: 21,
       note: "Discovery call with David Chen (VP Sales). Pain point is their team losing deal context when reps change accounts. Very excited about memory features. No budget concerns raised. Wants to see a live demo with their own data.",
     },
     {
       dealId: "globex-002",
       dealName: "Globex Industries",
       stakeholder: "David Chen (VP Sales)",
+      daysAgo: 5,
       note: "Demo session with David. Went very well — he showed it to his team live. One concern: can the system integrate with Salesforce CRM. Timeline is Q3 this year. Likely to close if Salesforce integration is confirmed.",
     },
   ];
@@ -334,12 +340,13 @@ app.post("/api/seed", async (req, res) => {
   try {
     for (const item of seedData) {
       const enrichedNote = `[Deal: ${item.dealName}] [DealID: ${item.dealId}] [Stakeholder: ${item.stakeholder}] ${item.note}`;
+      const timestamp = new Date(Date.now() - (item.daysAgo || 0) * 24 * 60 * 60 * 1000).toISOString();
       await hindsight.retain(BANK_ID, enrichedNote, {
         metadata: {
           dealId: item.dealId,
           dealName: item.dealName,
           stakeholder: item.stakeholder,
-          timestamp: new Date().toISOString(),
+          timestamp,
         },
         tags: [item.dealId],
       });

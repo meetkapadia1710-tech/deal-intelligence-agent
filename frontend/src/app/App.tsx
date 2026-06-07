@@ -4,6 +4,7 @@ import { apiGet } from "services/apiClient";
 import Sidebar from "components/Sidebar";
 import DashboardPanel from "features/dashboard/DashboardPanel";
 import ActiveDealsPanel from "features/dashboard/ActiveDealsPanel";
+import LandingPage from "features/landing/LandingPage";
 import IntelligencePanel from "features/dashboard/IntelligencePanel";
 import SettingsPanel from "features/dashboard/SettingsPanel";
 import AnalyticsPanel from "features/analytics/AnalyticsPanel";
@@ -44,9 +45,7 @@ export default function App() {
   return (
     <>
       <SignedOut>
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc' }}>
-          <SignIn fallbackRedirectUrl="/" signUpFallbackRedirectUrl="/" />
-        </div>
+        <LandingPage />
       </SignedOut>
       <SignedIn>
         <div className="app-container">
