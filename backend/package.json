@@ -7,10 +7,11 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
+    "@clerk/express": "^2.1.23",
+    "@vectorize-io/hindsight-client": "^0.7.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "groq-sdk": "^1.2.1",
-    "@vectorize-io/hindsight-client": "^0.7.2"
+    "groq-sdk": "^1.2.1"
   }
 }
