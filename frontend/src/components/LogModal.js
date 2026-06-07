@@ -1,5 +1,9 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
 import { apiPost } from "../api/apiClient";
+import { dialogVariants, backdropVariants } from "../theme/motion";
+import { Ripple } from "./ui/Ripple";
 
 export default function LogModal({ dealId, dealName, onClose, onLogged }) {
   const [note, setNote] = useState("");
@@ -19,11 +23,22 @@ export default function LogModal({ dealId, dealName, onClose, onLogged }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <motion.div 
+      className="modal-overlay" 
+      onClick={onClose}
+      variants={backdropVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      <motion.div 
+        className="modal" 
+        onClick={(e) => e.stopPropagation()}
+        variants={dialogVariants}
+      >
+        <div className="modal-header" style={{ marginBottom: 8 }}>
           <div className="modal-icon-container">
-            <span className="modal-icon">+</span>
+            <Plus size={24} color="var(--accent-color)" />
           </div>
           <div>
             <h2 className="modal-title">Log Interaction</h2>
@@ -52,17 +67,21 @@ export default function LogModal({ dealId, dealName, onClose, onLogged }) {
           />
         </div>
         
-        <div className="modal-actions">
-          <button className="btn-ghost" onClick={onClose}>Cancel</button>
+        <div className="modal-actions" style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
+          <button className="btn-ghost pressable" onClick={onClose}>
+            Cancel
+            <Ripple color="rgba(255,255,255,0.1)" />
+          </button>
           <button
-            className={`btn-primary ${done ? "btn-success" : ""}`}
+            className={`btn-primary pressable ${done ? "btn-success" : ""}`}
             onClick={handleSubmit}
             disabled={loading || done || !note.trim()}
           >
             {done ? "✓ Stored in memory" : loading ? "Storing…" : "Store in Memory"}
+            <Ripple />
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,14 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Send, Sparkles } from "lucide-react";
 import { apiPost } from "../api/apiClient";
+import { chatMsgUserVariants, chatMsgAgentVariants } from "../theme/motion";
 
 function ChatMessage({ msg }) {
   const isUser = msg.role === "user";
+  const variants = isUser ? chatMsgUserVariants : chatMsgAgentVariants;
+
   return (
-    <div className={`msg ${isUser ? "msg-user" : "msg-agent"}`}>
+    <motion.div 
+      className={`msg ${isUser ? "msg-user" : "msg-agent"}`}
+      variants={variants}
+      initial="initial"
+      animate="animate"
+      layout
+    >
       <div className="msg-meta">
-        <span className="msg-role">{isUser ? "Rep" : "Agent"}</span>
+        <span className="msg-role" style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>
+          {isUser ? "Rep" : "Agent"}
+        </span>
         {!isUser && msg.memoriesCount !== undefined && (
-          <span className={`msg-badge ${msg.memoriesCount > 0 ? "badge-mem" : "badge-nomem"}`}>
+          <span style={{
+            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+            background: msg.memoriesCount > 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.05)',
+            color: msg.memoriesCount > 0 ? 'var(--success)' : 'var(--text-muted)'
+          }}>
             {msg.memoriesCount > 0 ? `${msg.memoriesCount} memories recalled` : "no prior context"}
           </span>
         )}
@@ -16,11 +33,11 @@ function ChatMessage({ msg }) {
       <div className="msg-bubble">
         <pre className="msg-text">{msg.content}</pre>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-export default function ChatPanel({ activeDeal, messages, setMessages }) {
+export default function ChatPanel({ activeDeal, messages, setMessages, onScroll }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
@@ -61,30 +78,70 @@ export default function ChatPanel({ activeDeal, messages, setMessages }) {
   ];
 
   return (
-    <div className="chat-area">
-      <div className="messages">
-        {messages.map((m, i) => (
-          <ChatMessage key={i} msg={m} />
-        ))}
-        {loading && (
-          <div className="msg msg-agent">
-            <div className="msg-meta"><span className="msg-role">Agent</span></div>
-            <div className="msg-bubble msg-loading">
-              <span className="dot" /><span className="dot" /><span className="dot" />
-            </div>
-          </div>
-        )}
+    <div className="chat-container">
+      <div className="messages-list" onScroll={onScroll}>
+        <AnimatePresence initial={false}>
+          {messages.map((m, i) => (
+            <ChatMessage key={i} msg={m} />
+          ))}
+          {loading && (
+            <motion.div 
+              key="loading-indicator"
+              className="msg msg-agent"
+              variants={chatMsgAgentVariants}
+              initial="initial"
+              animate="animate"
+              exit={{ opacity: 0, scale: 0.95 }}
+            >
+              <div className="msg-meta">
+                <span className="msg-role" style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Agent</span>
+              </div>
+              <div className="msg-bubble intelligence-indicator">
+                <div className="ai-core">
+                  <motion.div 
+                    className="ai-orbit"
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                  />
+                  <motion.div 
+                    className="ai-orbit"
+                    style={{ borderStyle: 'dotted', right: -12, top: -12, left: -12, bottom: -12 }}
+                    animate={{ rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                  />
+                </div>
+                <motion.span 
+                  className="ai-thinking-text"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                >
+                  Analyzing memory space...
+                </motion.span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div ref={bottomRef} />
       </div>
-      <div className="input-bar">
-        <div className="quick-prompts">
-          {quickPrompts.map((p) => (
-            <button key={p} className="quick-btn" onClick={() => setInput(p)}>
+
+      <div className="input-area">
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', zIndex: 1 }}>
+          {quickPrompts.map((p, i) => (
+            <motion.button 
+              key={p} 
+              className="btn-ghost" 
+              style={{ padding: '6px 14px', fontSize: 12 }}
+              onClick={() => setInput(p)}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 + i * 0.1 }}
+            >
               {p}
-            </button>
+            </motion.button>
           ))}
         </div>
         <div className="input-row">
+          <Sparkles size={18} color="var(--accent-color)" />
           <input
             className="chat-input"
             placeholder={`Ask about ${activeDeal.dealName}…`}
@@ -97,10 +154,7 @@ export default function ChatPanel({ activeDeal, messages, setMessages }) {
             onClick={handleSend}
             disabled={loading || !input.trim()}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5"></line>
-              <polyline points="5 12 12 5 19 12"></polyline>
-            </svg>
+            <Send size={18} />
           </button>
         </div>
       </div>

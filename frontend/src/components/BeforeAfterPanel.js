@@ -1,5 +1,9 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { XCircle, CheckCircle2, ArrowRight, Loader2, RefreshCcw } from "lucide-react";
 import { apiPost } from "../api/apiClient";
+import { fadeThroughVariants, staggerContainer, staggerItem } from "../theme/motion";
+import { Ripple } from "./ui/Ripple";
 
 const BA_EXAMPLES = [
   "What did the CFO say about pricing?",
@@ -29,7 +33,12 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
   }
 
   return (
-    <div className="ba-panel">
+    <motion.div 
+      className="ba-panel"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
       <div className="ba-intro">
         <p className="ba-intro-title">Before & After Memory</p>
         <p className="ba-intro-sub">
@@ -37,91 +46,132 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
         </p>
       </div>
 
-      {!result && !loading && (
-        <div className="ba-examples">
-          <p className="ba-examples-label">Suggested questions</p>
-          <div className="ba-examples-grid">
-            {BA_EXAMPLES.map((e) => (
-              <button key={e} className="ba-example-btn" onClick={() => setQuestion(e)}>
-                {e}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {!result && !loading && (
+          <motion.div 
+            key="examples"
+            className="ba-examples"
+            variants={fadeThroughVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <p className="ba-examples-label" style={{ textAlign: 'center', marginBottom: 16 }}>Suggested questions</p>
+            <motion.div className="ba-examples-grid" variants={staggerContainer} initial="initial" animate="animate">
+              {BA_EXAMPLES.map((e) => (
+                <motion.button 
+                  key={e} 
+                  variants={staggerItem}
+                  className="ba-example-btn pressable" 
+                  onClick={() => setQuestion(e)}
+                >
+                  <span style={{ position: 'relative', zIndex: 1 }}>{e}</span>
+                  <Ripple color="rgba(255,255,255,0.05)" />
+                </motion.button>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
 
-      {loading && (
-        <div className="ba-columns">
-          <div className="ba-col ba-col-bad">
-            <div className="ba-col-header">
-              <span className="ba-icon-x">✗</span>
-              <div>
-                <div className="ba-col-label ba-label-bad">Without Memory</div>
-                <div className="ba-col-sub">Generic AI</div>
-              </div>
-            </div>
-            <div className="ba-loading-inner">
-              <span className="dot" /><span className="dot" /><span className="dot" />
-            </div>
-          </div>
-          <div className="ba-col ba-col-good">
-            <div className="ba-col-header">
-              <span className="ba-icon-check">✓</span>
-              <div>
-                <div className="ba-col-label ba-label-good">With Memory</div>
-                <div className="ba-col-sub">Deal Intelligence Agent</div>
-              </div>
-            </div>
-            <div className="ba-loading-inner">
-              <span className="dot" /><span className="dot" /><span className="dot" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {result && !loading && (
-        <>
-          <div className="ba-question-row">
-            <span className="ba-question-label">Question asked:</span>
-            <span className="ba-question-text">"{result.question}"</span>
-          </div>
-          <div className="ba-columns">
+        {loading && (
+          <motion.div 
+            key="loading"
+            className="ba-columns"
+            variants={fadeThroughVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
             <div className="ba-col ba-col-bad">
               <div className="ba-col-header">
-                <span className="ba-icon-x">✗</span>
+                <XCircle size={24} color="var(--error)" />
                 <div>
                   <div className="ba-col-label ba-label-bad">Without Memory</div>
-                  <div className="ba-col-sub">Generic AI — no deal context</div>
+                  <div className="ba-col-sub">Generic AI</div>
                 </div>
               </div>
-              <pre className="ba-text">{result.noMem.answer}</pre>
+              <div className="ba-loading-inner" style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                  <Loader2 size={32} color="var(--error)" />
+                </motion.div>
+              </div>
             </div>
             <div className="ba-col ba-col-good">
               <div className="ba-col-header">
-                <span className="ba-icon-check">✓</span>
+                <CheckCircle2 size={24} color="var(--success)" />
                 <div>
                   <div className="ba-col-label ba-label-good">With Memory</div>
-                  <div className="ba-col-sub">
-                    {result.withMem.memoriesCount} memories recalled · {dealName}
+                  <div className="ba-col-sub">Deal Intelligence Agent</div>
+                </div>
+              </div>
+              <div className="ba-loading-inner" style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                  <Loader2 size={32} color="var(--success)" />
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {result && !loading && (
+          <motion.div
+            key="results"
+            variants={fadeThroughVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="ba-question-row">
+              <span className="ba-question-label">Question asked:</span>
+              <span className="ba-question-text">"{result.question}"</span>
+            </div>
+            <div className="ba-columns">
+              <div className="ba-col ba-col-bad">
+                <div className="ba-col-header">
+                  <XCircle size={24} color="var(--error)" />
+                  <div>
+                    <div className="ba-col-label ba-label-bad">Without Memory</div>
+                    <div className="ba-col-sub">Generic AI — no context</div>
                   </div>
                 </div>
-                <span className="ba-mem-badge">{result.withMem.memoriesCount} recalled</span>
+                <pre className="ba-text">{result.noMem.answer}</pre>
               </div>
-              <pre className="ba-text">{result.withMem.answer}</pre>
+              <div className="ba-col ba-col-good">
+                <div className="ba-col-header">
+                  <CheckCircle2 size={24} color="var(--success)" />
+                  <div>
+                    <div className="ba-col-label ba-label-good">With Memory</div>
+                    <div className="ba-col-sub">
+                      {result.withMem.memoriesCount} memories recalled
+                    </div>
+                  </div>
+                  <span className="ba-mem-badge" style={{ marginLeft: 'auto' }}>
+                    {result.withMem.memoriesCount} recalled
+                  </span>
+                </div>
+                <pre className="ba-text">{result.withMem.answer}</pre>
+              </div>
             </div>
-          </div>
-        </>
-      )}
-
-      <div className="ba-input-area">
-        {result && (
-          <button
-            className="ba-reset-btn"
-            onClick={() => { setResult(null); setQuestion(""); }}
-          >
-            ← Try another question
-          </button>
+          </motion.div>
         )}
+      </AnimatePresence>
+
+      <div className="ba-input-area" style={{ marginTop: 40 }}>
+        <AnimatePresence>
+          {result && (
+            <motion.button
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="ba-reset-btn pressable"
+              onClick={() => { setResult(null); setQuestion(""); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}
+            >
+              <RefreshCcw size={14} /> Try another question
+            </motion.button>
+          )}
+        </AnimatePresence>
+        
         <div className="ba-input-row">
           <input
             className="ba-input"
@@ -131,18 +181,16 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
             onKeyDown={(e) => e.key === "Enter" && handleCompare()}
           />
           <button
-            className="ba-submit-btn"
+            className="ba-submit-btn pressable"
             onClick={handleCompare}
             disabled={!question.trim() || loading}
           >
             Compare 
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: "6px"}}>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
+            <ArrowRight size={16} style={{ marginLeft: 6 }} />
+            <Ripple />
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

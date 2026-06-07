@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Database, Sparkles } from "lucide-react";
 import "./App.css";
 import { apiGet, apiPost } from "./api/apiClient";
 import Sidebar from "./components/Sidebar";
@@ -8,6 +10,8 @@ import TimelinePanel from "./components/TimelinePanel";
 import ReflectPanel from "./components/ReflectPanel";
 import LogModal from "./components/LogModal";
 import NewDealModal from "./components/NewDealModal";
+import { Ripple } from "./components/ui/Ripple";
+import { fadeThroughVariants, staggerContainer, staggerItem } from "./theme/motion";
 
 const TABS = [
   { key: "chat", label: "Chat" },
@@ -25,6 +29,7 @@ export default function App() {
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
   const [tab, setTab] = useState("chat");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => { loadDeals(); }, []);
 
@@ -62,10 +67,16 @@ export default function App() {
       memoryUsed: false,
       memoriesCount: 0,
     }]);
+    setTab("chat");
   }
 
+  // Handle scrolling for top bar blur
+  const handleScroll = (e) => {
+    setScrolled(e.target.scrollTop > 10);
+  };
+
   return (
-    <div className="app">
+    <div className="app-container">
       <Sidebar
         deals={deals}
         activeDeal={activeDeal}
@@ -73,96 +84,150 @@ export default function App() {
         onNewDeal={() => setShowNewDeal(true)}
       />
 
-      <main className="main">
-        {!activeDeal ? (
-          <div className="empty-state">
-            <div className="empty-icon-container glow">
-              <span className="empty-icon">◈</span>
-            </div>
-            <h1 className="empty-title">Deal Intelligence Agent</h1>
-            <p className="empty-sub">
-              AI-powered sales memory. Every call, every objection, every stakeholder — recalled instantly.
-            </p>
-            <div className="empty-actions">
-              <button
-                className={`btn-primary btn-lg ${seedDone ? "btn-success" : ""}`}
-                onClick={handleSeed}
-                disabled={seeding || seedDone}
-              >
-                {seedDone ? "✓ Demo data loaded" : seeding ? "Seeding…" : "Load Demo Data"}
-              </button>
-              <button className="btn-ghost btn-lg" onClick={() => setShowNewDeal(true)}>
-                Create a Deal
-              </button>
-            </div>
-            <p className="empty-hint">
-              Demo data seeds 2 deals with realistic interactions, objections, and stakeholders.
-            </p>
-          </div>
-        ) : (
-          <>
-            <header className="deal-header">
-              <div className="deal-header-left">
-                <h1 className="deal-name">{activeDeal.dealName}</h1>
-                <span className="deal-id-badge">{activeDeal.dealId}</span>
-              </div>
-              <div className="deal-header-right">
-                <div className="tab-group">
-                  {TABS.map((t) => (
-                    <button
-                      key={t.key}
-                      className={`tab-btn ${tab === t.key ? "active" : ""}`}
-                      onClick={() => setTab(t.key)}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-                <button className="btn-primary" onClick={() => setShowLog(true)}>
-                  <span className="btn-icon">+</span> Log Interaction
+      <main className="content-area">
+        <AnimatePresence mode="wait">
+          {!activeDeal ? (
+            <motion.div 
+              key="empty-state"
+              className="empty-state"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.2 } }}
+              style={{ flex: 1 }}
+            >
+              <motion.div variants={staggerItem} className="empty-icon-container glow">
+                <Sparkles size={40} color="var(--accent-color)" />
+              </motion.div>
+              <motion.h1 variants={staggerItem} className="empty-title">Deal Intelligence Agent</motion.h1>
+              <motion.p variants={staggerItem} className="empty-sub">
+                AI-powered sales memory. Every call, every objection, every stakeholder — recalled instantly.
+              </motion.p>
+              <motion.div variants={staggerItem} className="empty-actions" style={{ display: 'flex', gap: 16 }}>
+                <button
+                  className="btn-primary pressable"
+                  onClick={handleSeed}
+                  disabled={seeding || seedDone}
+                >
+                  <Database size={18} />
+                  {seedDone ? "Demo data loaded" : seeding ? "Seeding…" : "Load Demo Data"}
+                  <Ripple />
                 </button>
-              </div>
-            </header>
+                <button className="btn-ghost pressable" onClick={() => setShowNewDeal(true)}>
+                  Create a Deal
+                  <Ripple color="rgba(255,255,255,0.1)" />
+                </button>
+              </motion.div>
+              <motion.p variants={staggerItem} className="empty-hint" style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 16 }}>
+                Demo data seeds 2 deals with realistic interactions, objections, and stakeholders.
+              </motion.p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="active-deal"
+              style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <header className={`deal-header ${scrolled ? 'scrolled' : ''}`}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <h1 className="deal-name">{activeDeal.dealName}</h1>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 999, border: '1px solid var(--border)', fontFamily: 'var(--font-mono)' }}>
+                    {activeDeal.dealId}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                  <div className="tab-group">
+                    {TABS.map((t) => {
+                      const isActive = tab === t.key;
+                      return (
+                        <button
+                          key={t.key}
+                          className={`tab-btn pressable ${isActive ? "active" : ""}`}
+                          onClick={() => setTab(t.key)}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="tab-indicator"
+                              className="tab-indicator"
+                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                              style={{ left: 4, right: 4 }}
+                            />
+                          )}
+                          <span style={{ position: 'relative', zIndex: 1 }}>{t.label}</span>
+                          <Ripple color={isActive ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)"} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button className="btn-primary pressable" onClick={() => setShowLog(true)}>
+                    <Plus size={18} />
+                    Log Interaction
+                    <Ripple />
+                  </button>
+                </div>
+              </header>
 
-            <div className="content-area">
-              {tab === "chat" && (
-                <ChatPanel
-                  activeDeal={activeDeal}
-                  messages={messages}
-                  setMessages={setMessages}
-                />
-              )}
-              {tab === "before-after" && (
-                <div className="panel-container">
-                  <BeforeAfterPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
-                </div>
-              )}
-              {tab === "timeline" && (
-                <div className="panel-container">
-                  <TimelinePanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
-                </div>
-              )}
-              {tab === "reflect" && (
-                <div className="panel-container">
-                  <ReflectPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
-                </div>
-              )}
-            </div>
-          </>
-        )}
+              <div className="content-area">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={tab}
+                    variants={fadeThroughVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                  >
+                    {tab === "chat" && (
+                      <ChatPanel
+                        activeDeal={activeDeal}
+                        messages={messages}
+                        setMessages={setMessages}
+                        onScroll={handleScroll}
+                      />
+                    )}
+                    {tab === "before-after" && (
+                      <div className="panel-container" onScroll={handleScroll}>
+                        <BeforeAfterPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                      </div>
+                    )}
+                    {tab === "timeline" && (
+                      <div className="panel-container" onScroll={handleScroll}>
+                        <TimelinePanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                      </div>
+                    )}
+                    {tab === "reflect" && (
+                      <div className="panel-container" onScroll={handleScroll}>
+                        <ReflectPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {showLog && (
-        <LogModal
-          dealId={activeDeal.dealId}
-          dealName={activeDeal.dealName}
-          onClose={() => setShowLog(false)}
-          onLogged={loadDeals}
-        />
-      )}
-      {showNewDeal && (
-        <NewDealModal onClose={() => setShowNewDeal(false)} onCreate={handleNewDeal} />
-      )}
+      <AnimatePresence>
+        {showLog && (
+          <LogModal
+            dealId={activeDeal.dealId}
+            dealName={activeDeal.dealName}
+            onClose={() => setShowLog(false)}
+            onLogged={loadDeals}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showNewDeal && (
+          <NewDealModal onClose={() => setShowNewDeal(false)} onCreate={handleNewDeal} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
