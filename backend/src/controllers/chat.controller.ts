@@ -7,7 +7,7 @@ export async function handleChat(req: Request, res: Response): Promise<void> {
   try {
     const memories = await recallMemories(dealId, question, "mid");
     const memoryText = memories.map((m: any) => m.text).join("\n---\n") || "No prior interactions.";
-    const systemPrompt = `You are a sales coach for ${dealName || dealId}.`;
+    const systemPrompt = `You are a sales coach for ${dealName || dealId}. Only answer the specific question based on the deal history. If the question is gibberish or too short (e.g., a single letter), politely ask for clarification instead of providing unsolicited advice.`;
     const userPrompt = `Deal history:\n${memoryText}\n\nQuestion: ${question}`;
     const answer = await generateChatCompletion(systemPrompt, userPrompt);
     res.json({ answer, memoryUsed: memories.length > 0, memoriesCount: memories.length, dealId });
@@ -28,7 +28,7 @@ export async function handleCompare(req: Request, res: Response): Promise<void> 
     const memoryText = memories.map((m: any) => m.text).join("\n---\n") || "No prior interactions.";
     const [noMemAnswer, withMemAnswer] = await Promise.all([
       generateChatCompletion("You are a generic assistant.", question, 350),
-      generateChatCompletion(`Sales coach for ${dealName || dealId}.`, `History:\n${memoryText}\n\nQ: ${question}`, 350)
+      generateChatCompletion(`You are a sales coach for ${dealName || dealId}. Only answer the specific question based on the deal history. If the question is gibberish or too short (e.g., a single letter), politely ask for clarification instead of providing unsolicited advice.`, `History:\n${memoryText}\n\nQ: ${question}`, 350)
     ]);
     res.json({ noMemory: noMemAnswer, withMemory: withMemAnswer, memoriesCount: memories.length });
   } catch (err: any) { res.status(500).json({ error: err.message }); }

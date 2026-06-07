@@ -31,10 +31,10 @@ export async function getContext(req: Request, res: Response): Promise<void> {
 
 export async function seedDemoData(req: Request, res: Response): Promise<void> {
   const seedData = [
-    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "Sarah Jenkins (VP Sales)", note: "Initial discovery call. Sarah is very interested in the automation features but raised a concern about implementation time. She mentioned they currently use Salesforce." },
-    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "Mark (CTO)", note: "Technical demo completed. Mark raised a hard security objection regarding our SOC2 compliance. He also mentioned their Q3 budget is extremely tight." },
-    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "Sarah Jenkins (VP Sales)", note: "Pricing negotiation email. Sarah pushed back on the $50k annual price tag, asking for a flat 20% discount if they sign this week." },
-    { dealId: "stark-ind-002", dealName: "Stark Industries", stakeholder: "Pepper Potts", note: "Excited about memory features, but wants an enterprise SLA." }
+    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "Sarah Jenkins (VP Sales)", note: "[3 WEEKS AGO] Initial discovery call. Sarah is very interested in the automation features but raised a concern about implementation time. She mentioned they currently use Salesforce." },
+    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "Mark (CTO)", note: "[LAST WEEK] Technical demo completed. Mark raised a hard security objection regarding our SOC2 compliance. He also mentioned their Q3 budget is extremely tight." },
+    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "Sarah Jenkins (VP Sales)", note: "[YESTERDAY] Pricing negotiation email. Sarah pushed back on the $50k annual price tag, asking for a flat 20% discount if they sign this week." },
+    { dealId: "acme-001", dealName: "Acme Corp", stakeholder: "System", note: "USER PREFERENCE: The user prefers all email drafts to be extremely concise (under 3 sentences), highly assertive, and structured with bullet points if listing facts." }
   ];
   try {
     for (const item of seedData) await retainMemory(item.dealId, item.dealName, item.stakeholder, item.note);

@@ -7,17 +7,18 @@ import { Ripple } from "components/ui/Ripple";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-const BA_EXAMPLES = [
-  "What did the CFO say about pricing?",
-  "Draft a follow-up email for the key stakeholder",
-  "What are the main objections in this deal?",
-  "How should I prepare for the next call?",
-];
+
 
 export default function BeforeAfterPanel({ dealId, dealName }: any) {
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const suggestedQuestions = [
+    `What is the current status of the ${dealName || "current"} deal?`,
+    "What was the main objection from our last call?",
+    "Draft a follow-up email about the pricing pushback.",
+  ];
 
   async function handleCompare() {
     if (!question.trim() || loading) return;
@@ -60,7 +61,7 @@ export default function BeforeAfterPanel({ dealId, dealName }: any) {
           >
             <p className="ba-examples-label" style={{ textAlign: 'center', marginBottom: 16 }}>Suggested questions</p>
             <motion.div className="ba-examples-grid" variants={staggerContainer} initial="initial" animate="animate">
-              {BA_EXAMPLES.map((e: any) => (
+              {suggestedQuestions.map((e: any) => (
                 <motion.button 
                   key={e} 
                   variants={staggerItem}
