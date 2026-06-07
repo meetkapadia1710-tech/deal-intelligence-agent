@@ -1,0 +1,261 @@
+.dashboard-container {
+  flex: 1;
+  background-color: #f8fafc;
+  color: #0f172a;
+  padding: var(--space-32) var(--space-48);
+  overflow-y: auto;
+  font-family: var(--font-sans);
+}
+
+.dashboard-header {
+  margin-bottom: var(--space-32);
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: var(--space-16);
+  margin-top: var(--space-32);
+}
+
+.summary-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-24);
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: var(--space-24);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.sc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-16);
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.sc-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: var(--space-8);
+}
+
+.sc-metrics {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.sc-trend {
+  font-size: 13px;
+  font-weight: 600;
+}
+.sc-trend.positive { color: #10b981; }
+.sc-trend.negative { color: #ef4444; }
+
+.sc-sparkline {
+  width: 60px;
+  height: 30px;
+}
+
+/* Intelligence Feed */
+.feed-desc {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: var(--space-24);
+}
+
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-left: 10px;
+  padding-left: 20px;
+  border-left: 2px solid #e2e8f0;
+  gap: var(--space-24);
+}
+
+.feed-item {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: var(--space-24);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.feed-item::before {
+  content: '';
+  position: absolute;
+  left: -27px;
+  top: 30px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #e2e8f0;
+}
+
+.feed-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: var(--space-8);
+}
+
+.feed-item-desc {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: var(--space-16);
+}
+
+.feed-item-actions {
+  display: flex;
+  gap: var(--space-12);
+}
+
+.feed-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.feed-btn-dark {
+  background: #1e293b;
+  color: #ffffff;
+  border: none;
+}
+
+.feed-btn-outline {
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* Right Sidebar Overrides for App.css */
+.right-sidebar {
+  width: 380px;
+  background-color: #ffffff;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.rs-header {
+  padding: var(--space-24);
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rs-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.rs-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-24);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.rs-msg-name {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.rs-bubble {
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-16);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+}
+
+.rs-bubble-user {
+  background-color: #f1f5f9;
+}
+
+.rs-bubble-agent {
+  background-color: #334155;
+  color: #ffffff;
+}
+
+.rs-input-area {
+  padding: var(--space-24);
+  border-top: 1px solid #e2e8f0;
+}
+
+.rs-input-box {
+  display: flex;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: var(--space-8);
+  background: #ffffff;
+}
+
+.rs-input-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #0f172a;
+  background: transparent;
+}
+
+.rs-input-btn {
+  background: #334155;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Sidebar overriding */
+.sidebar {
+  background: #1e293b;
+  color: #ffffff;
+  border-right: none;
+}
+.sidebar .deal-btn {
+  color: #94a3b8;
+}
+.sidebar .deal-btn.active {
+  color: #ffffff;
+  background: rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+}

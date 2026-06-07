@@ -1,47 +1,26 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles } from "lucide-react";
+import { Send, MoreHorizontal } from "lucide-react";
 import { apiPost } from "services/apiClient";
-import { chatMsgUserVariants, chatMsgAgentVariants } from "constants/motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 function ChatMessage({ msg }) {
   const isUser = msg.role === "user";
-  const variants = isUser ? chatMsgUserVariants : chatMsgAgentVariants;
 
   return (
-    <motion.div 
-      className={`msg ${isUser ? "msg-user" : "msg-agent"}`}
-      variants={variants}
-      initial="initial"
-      animate="animate"
-      layout
-    >
-      <div className="msg-meta">
-        <span className="msg-role" style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>
-          {isUser ? "Rep" : "Agent"}
-        </span>
-        {!isUser && msg.memoriesCount !== undefined && (
-          <span style={{
-            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
-            background: msg.memoriesCount > 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.05)',
-            color: msg.memoriesCount > 0 ? 'var(--success)' : 'var(--text-muted)'
-          }}>
-            {msg.memoriesCount > 0 ? `${msg.memoriesCount} memories recalled` : "no prior context"}
-          </span>
-        )}
-      </div>
-      <div className="msg-bubble">
-        <div className="msg-text markdown-body">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: isUser ? 'flex-start' : 'flex-start' }}>
+      <span className="rs-msg-name">{isUser ? "Alex" : "Agent"}</span>
+      <div className={`rs-bubble ${isUser ? 'rs-bubble-user' : 'rs-bubble-agent'}`}>
+        <div className="markdown-body" style={{ fontSize: 13, lineHeight: 1.4 }}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-export default function ChatPanel({ activeDeal, messages, setMessages, onScroll }) {
+export default function ChatPanel({ messages, setMessages, activeDeal }: any) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
@@ -50,118 +29,142 @@ export default function ChatPanel({ activeDeal, messages, setMessages, onScroll 
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  async function handleSend() {
-    if (!input.trim() || !activeDeal || loading) return;
-    const question = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: question }]);
+  async function handleSend(queryOverride?: string) {
+    const question = typeof queryOverride === 'string' ? queryOverride : input.trim();
+    if (!question || loading) return;
+    
+    if (typeof queryOverride !== 'string') {
+      setInput("");
+    }
+
+    setMessages((prev: any[]) => [...prev, { role: "user", content: question }]);
     setLoading(true);
 
+    const dealIdToUse = activeDeal ? activeDeal.dealId : "global";
+    const dealNameToUse = activeDeal ? activeDeal.dealName : "Global Dashboard";
+
     const res = await apiPost("/chat", {
-      dealId: activeDeal.dealId,
-      dealName: activeDeal.dealName,
+      dealId: dealIdToUse,
+      dealName: dealNameToUse,
       question,
     });
     setLoading(false);
-    setMessages((prev) => [
+    setMessages((prev: any[]) => [
       ...prev,
       {
         role: "agent",
         content: res.answer || res.error || "Something went wrong.",
-        memoryUsed: res.memoryUsed,
-        memoriesCount: res.memoriesCount,
       },
     ]);
   }
 
-  const quickPrompts = [
-    "What did the CFO say about pricing?",
-    "Draft a follow-up email",
-    "Prepare me for the next call",
-    "Who are the key decision makers?",
-  ];
+  const [showChatMenu, setShowChatMenu] = useState(false);
+
+  const suggestions = activeDeal && activeDeal.dealId !== 'global'
+    ? [
+        `Summarize recent interactions for ${activeDeal.dealName}`,
+        `Draft a follow-up email for ${activeDeal.dealName}`,
+        `What are the main objections for ${activeDeal.dealName}?`
+      ]
+    : [
+        "Summarize recent objections across all deals",
+        "Which deals are at high risk?",
+        "What is our total pipeline value?"
+      ];
 
   return (
-    <div className="chat-container">
-      <div className="messages-list" onScroll={onScroll}>
+    <>
+      <div className="rs-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span className="rs-title">AI Agent Chat</span>
+        <div style={{ position: 'relative' }}>
+          <MoreHorizontal size={20} color="#64748b" style={{cursor: 'pointer'}} onClick={() => setShowChatMenu(!showChatMenu)} />
+          {showChatMenu && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              background: '#fff',
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+              marginTop: 4,
+              padding: 8,
+              zIndex: 10,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              minWidth: 150
+            }}>
+              <button 
+                style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'none', border: 'none', color: '#0f172a', fontSize: 13, borderRadius: 4, cursor: 'pointer' }}
+                onMouseEnter={(e: any) => e.target.style.background = '#f1f5f9'}
+                onMouseLeave={(e: any) => e.target.style.background = 'none'}
+                onClick={() => { setMessages([]); setShowChatMenu(false); }}
+              >
+                Clear Chat
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="rs-messages">
+        {messages.length === 0 && (
+          <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center', marginBottom: 8 }}>
+              Ask anything about your deals, or try:
+            </div>
+            {suggestions.map((q, i) => (
+              <button 
+                key={i}
+                onClick={() => handleSend(q)}
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: '#3b82f6',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: 500
+                }}
+                onMouseEnter={(e: any) => { e.target.style.background = '#eff6ff'; e.target.style.borderColor = '#bfdbfe'; }}
+                onMouseLeave={(e: any) => { e.target.style.background = '#f8fafc'; e.target.style.borderColor = '#e2e8f0'; }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
         <AnimatePresence initial={false}>
           {messages.map((m, i) => (
             <ChatMessage key={i} msg={m} />
           ))}
           {loading && (
-            <motion.div 
-              key="loading-indicator"
-              className="msg msg-agent"
-              variants={chatMsgAgentVariants}
-              initial="initial"
-              animate="animate"
-              exit={{ opacity: 0, scale: 0.95 }}
-            >
-              <div className="msg-meta">
-                <span className="msg-role" style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Agent</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span className="rs-msg-name">Agent</span>
+              <div className="rs-bubble rs-bubble-agent" style={{ opacity: 0.8 }}>
+                Thinking...
               </div>
-              <div className="msg-bubble intelligence-indicator">
-                <div className="ai-core">
-                  <motion.div 
-                    className="ai-orbit"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                  />
-                  <motion.div 
-                    className="ai-orbit"
-                    style={{ borderStyle: 'dotted', right: -12, top: -12, left: -12, bottom: -12 }}
-                    animate={{ rotate: -360 }}
-                    transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                  />
-                </div>
-                <motion.span 
-                  className="ai-thinking-text"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                >
-                  Analyzing memory space...
-                </motion.span>
-              </div>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
         <div ref={bottomRef} />
       </div>
 
-      <div className="input-area">
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', zIndex: 1 }}>
-          {quickPrompts.map((p, i) => (
-            <motion.button 
-              key={p} 
-              className="btn-ghost" 
-              style={{ padding: '6px 14px', fontSize: 12 }}
-              onClick={() => setInput(p)}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
-            >
-              {p}
-            </motion.button>
-          ))}
-        </div>
-        <div className="input-row">
-          <Sparkles size={18} color="var(--accent-color)" />
+      <div className="rs-input-area">
+        <div className="rs-input-box">
           <input
-            className="chat-input"
-            placeholder={`Ask about ${activeDeal.dealName}…`}
+            placeholder="Ask the AI Agent..."
             value={input}
             onChange={(e: any) => setInput(e.target.value)}
             onKeyDown={(e: any) => e.key === "Enter" && !e.shiftKey && handleSend()}
           />
-          <button
-            className="send-btn"
-            onClick={handleSend}
-            disabled={loading || !input.trim()}
-          >
-            <Send size={18} />
+          <button className="rs-input-btn" onClick={() => handleSend()} disabled={loading || !input.trim()}>
+            <Send size={16} />
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
+
