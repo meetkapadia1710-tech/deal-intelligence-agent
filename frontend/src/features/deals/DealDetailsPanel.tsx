@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Folder, Clock, User, ArrowLeft, Activity, Zap, RefreshCw } from "lucide-react";
 import { apiGet } from "services/apiClient";
 import AnalyticsPanel from "features/analytics/AnalyticsPanel";
-import { motion } from "framer-motion";
+import MemoryComparePanel from '../dashboard/components/MemoryComparePanel';
+import { motion, AnimatePresence } from "framer-motion";
 import { staggerContainer, itemReveal, motionTokens } from "lib/motion";
 import { MotionNumber } from "components/ui/MotionNumber";
 import { Skeleton } from "components/ui/Skeleton";
@@ -33,6 +34,7 @@ export default function DealDetailsPanel({ deal, onBack }: any) {
   const [nextActions, setNextActions] = useState<NextAction[]>([]);
   const [actionsLoading, setActionsLoading] = useState(false);
   const [actionsEmpty, setActionsEmpty] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
 
   useEffect(() => {
     async function fetchTimeline() {
@@ -55,8 +57,13 @@ export default function DealDetailsPanel({ deal, onBack }: any) {
     setActionsEmpty(false);
     try {
       const res = await apiGet(`/next-action/${deal.dealId}`);
-      setNextActions(res.actions || []);
-      setActionsEmpty(!!res.empty);
+      if (Array.isArray(res)) {
+        setNextActions(res);
+        setActionsEmpty(res.length === 0);
+      } else {
+        setNextActions(res.actions || []);
+        setActionsEmpty(!!res.empty || (res.actions && res.actions.length === 0));
+      }
     } catch (err) {
       console.error("Failed to load next actions", err);
     } finally {
@@ -134,133 +141,156 @@ export default function DealDetailsPanel({ deal, onBack }: any) {
         </motion.div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 32 }}>
-        <div>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#0f172a', marginBottom: 24 }}>Interaction Timeline</h2>
-          
-          {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <Skeleton height={100} borderRadius={12} />
-              <Skeleton height={100} borderRadius={12} />
-              <Skeleton height={100} borderRadius={12} />
-            </div>
-          ) : timeline.length === 0 ? (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ color: '#64748b' }}>No interactions found for this deal.</motion.p>
-          ) : (
-            <motion.div variants={staggerContainer} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {timeline.map((entry, idx) => (
-                <motion.div variants={itemReveal} key={idx} style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, color: '#64748b', fontSize: 13 }}>
-                    <Clock size={14} />
-                    <span>{entry.metadata?.timestamp ? new Date(entry.metadata.timestamp).toLocaleDateString() : 'Recent'}</span>
-                    {entry.metadata?.stakeholder && (
-                      <>
-                        <span style={{ margin: '0 8px' }}>|</span>
-                        <User size={14} />
-                        <span>{entry.metadata.stakeholder}</span>
-                      </>
-                    )}
-                  </div>
-                  <p style={{ color: '#334155', lineHeight: 1.5 }}>{entry.text}</p>
-                </motion.div>
-              ))}
-            </motion.div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, marginTop: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#0f172a' }}>Interaction Timeline</h2>
+          {!showTimeline && timeline.length > 0 && (
+            <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: 12, padding: '2px 8px', borderRadius: 12, fontWeight: 500 }}>
+              {timeline.length} entries
+            </span>
           )}
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+          onClick={() => setShowTimeline(!showTimeline)}
+          style={{ padding: '8px 16px', background: '#3b82f6', color: '#fff', fontWeight: 600, borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+        >
+          {showTimeline ? 'Hide Timeline' : 'View Timeline'}
+        </motion.button>
+      </div>
+
+      <AnimatePresence>
+        {showTimeline && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', marginBottom: 32 }}>
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <Skeleton height={100} borderRadius={12} />
+                <Skeleton height={100} borderRadius={12} />
+                <Skeleton height={100} borderRadius={12} />
+              </div>
+            ) : timeline.length === 0 ? (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ color: '#64748b' }}>No interactions found for this deal.</motion.p>
+            ) : (
+              <motion.div variants={staggerContainer} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {timeline.map((entry, idx) => (
+                  <motion.div variants={itemReveal} key={idx} style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, color: '#64748b', fontSize: 13 }}>
+                      <Clock size={14} />
+                      <span>{entry.metadata?.timestamp ? new Date(entry.metadata.timestamp).toLocaleDateString() : 'Recent'}</span>
+                      {entry.metadata?.stakeholder && (
+                        <>
+                          <span style={{ margin: '0 8px' }}>|</span>
+                          <User size={14} />
+                          <span>{entry.metadata.stakeholder}</span>
+                        </>
+                      )}
+                    </div>
+                    <p style={{ color: '#334155', lineHeight: 1.5 }}>{entry.text}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {/* Next Best Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...motionTokens.springSmooth, delay: 0.3 }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 600, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
+                <Zap size={20} color="#3b82f6" /> Next Best Actions
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                onClick={fetchNextActions}
+                disabled={actionsLoading}
+                style={{
+                  padding: "7px 14px", borderRadius: 8, border: "1px solid #e2e8f0",
+                  background: actionsLoading ? "#f8fafc" : "#f1f5f9",
+                  color: actionsLoading ? "#94a3b8" : "#475569",
+                  fontSize: 12, fontWeight: 600, cursor: actionsLoading ? "default" : "pointer",
+                  display: "flex", alignItems: "center", gap: 5,
+                }}
+              >
+                <motion.div
+                  animate={actionsLoading ? { rotate: 360 } : { rotate: 0 }}
+                  transition={actionsLoading ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}
+                >
+                  <RefreshCw size={12} />
+                </motion.div>
+                Refresh
+              </motion.button>
+            </div>
+
+            {actionsLoading ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <Skeleton height={80} borderRadius={12} />
+                <Skeleton height={80} borderRadius={12} />
+                <Skeleton height={80} borderRadius={12} />
+              </div>
+            ) : actionsEmpty || nextActions.length === 0 ? (
+              <p style={{ color: "#64748b", fontSize: 14 }}>
+                No interactions found for this deal. Log some interactions to generate AI recommendations.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {nextActions.map((action, idx) => {
+                  const colors = categoryColors[action.category] || categoryColors["Follow-up"];
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ ...motionTokens.springSmooth, delay: idx * 0.08 }}
+                      style={{
+                        display: "flex", gap: 16, padding: 18, borderRadius: 12,
+                        border: "1px solid #e2e8f0", background: "#fff",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                      }}
+                    >
+                      <div style={{
+                        width: 32, height: 32, borderRadius: "50%",
+                        background: "#0f172a", color: "#fff",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 13, fontWeight: 700, flexShrink: 0,
+                      }}>
+                        {action.priority}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                          <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: colors.bg, color: colors.text }}>
+                            {action.category}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: urgencyColor[action.urgency] || "#64748b" }}>
+                            ● {action.urgency} priority
+                          </span>
+                          <span style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 3 }}>
+                            <Clock size={10} /> {action.timeframe}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 4 }}>{action.title}</p>
+                        <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{action.reasoning}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+
+          <MemoryComparePanel />
         </div>
 
         <div>
           <AnalyticsPanel dealId={deal.dealId} dealName={deal.dealName} inline={true} />
         </div>
       </div>
-
-      {/* Next Best Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...motionTokens.springSmooth, delay: 0.3 }}
-        style={{ marginTop: 32 }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
-            <Zap size={20} color="#3b82f6" /> Next Best Actions
-          </h2>
-          <motion.button
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            onClick={fetchNextActions}
-            disabled={actionsLoading}
-            style={{
-              padding: "7px 14px", borderRadius: 8, border: "1px solid #e2e8f0",
-              background: actionsLoading ? "#f8fafc" : "#f1f5f9",
-              color: actionsLoading ? "#94a3b8" : "#475569",
-              fontSize: 12, fontWeight: 600, cursor: actionsLoading ? "default" : "pointer",
-              display: "flex", alignItems: "center", gap: 5,
-            }}
-          >
-            <motion.div
-              animate={actionsLoading ? { rotate: 360 } : { rotate: 0 }}
-              transition={actionsLoading ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}
-            >
-              <RefreshCw size={12} />
-            </motion.div>
-            Refresh
-          </motion.button>
-        </div>
-
-        {actionsLoading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <Skeleton height={80} borderRadius={12} />
-            <Skeleton height={80} borderRadius={12} />
-            <Skeleton height={80} borderRadius={12} />
-          </div>
-        ) : actionsEmpty || nextActions.length === 0 ? (
-          <p style={{ color: "#64748b", fontSize: 14 }}>
-            No interactions found for this deal. Log some interactions to generate AI recommendations.
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {nextActions.map((action, idx) => {
-              const colors = categoryColors[action.category] || categoryColors["Follow-up"];
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ ...motionTokens.springSmooth, delay: idx * 0.08 }}
-                  style={{
-                    display: "flex", gap: 16, padding: 18, borderRadius: 12,
-                    border: "1px solid #e2e8f0", background: "#fff",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div style={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    background: "#0f172a", color: "#fff",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 13, fontWeight: 700, flexShrink: 0,
-                  }}>
-                    {action.priority}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: colors.bg, color: colors.text }}>
-                        {action.category}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: urgencyColor[action.urgency] || "#64748b" }}>
-                        ● {action.urgency} priority
-                      </span>
-                      <span style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 3 }}>
-                        <Clock size={10} /> {action.timeframe}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 4 }}>{action.title}</p>
-                    <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{action.reasoning}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
     </motion.div>
   );
 }

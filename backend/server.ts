@@ -257,13 +257,9 @@ app.post("/api/reflect", rateLimitMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// POST /api/next-action
-app.post("/api/next-action", async (req, res) => {
-  const { dealId, dealName } = req.body;
-
-  if (!dealId) {
-    return res.status(400).json({ error: "dealId is required" });
-  }
+// GET /api/next-action/:dealId
+app.get("/api/next-action/:dealId", async (req, res) => {
+  const { dealId } = req.params;
 
   try {
     const deal = await prisma.deal.findUnique({ where: { id: dealId } });
@@ -273,7 +269,7 @@ app.post("/api/next-action", async (req, res) => {
 
     const memories = await hindsight.recall(
       await getBankForDeal(dealId),
-      "objections stakeholders risks next steps",
+      "objections stakeholders risks next steps timeline priority",
       {
         tags: [dealId],
         tagsMatch: "all_strict",
@@ -290,37 +286,48 @@ app.post("/api/next-action", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `
-You are a world-class enterprise sales coach.
-
-Analyze the deal history and provide:
-
-1. Recommended Next Action
-2. Why it matters
-3. Priority (High/Medium/Low)
-
-Be concise and actionable.
-`,
+          content: `You are an expert enterprise sales coach.
+Analyze the deal history and generate exactly 3 highly actionable next steps.
+Return ONLY valid JSON in this exact structure:
+[
+  {
+    "title": "Short action title",
+    "reasoning": "Why this matters based on history",
+    "priority": "1" | "2" | "3",
+    "category": "Follow-up" | "Security" | "Pricing" | "Executive",
+    "urgency": "High" | "Medium" | "Low",
+    "timeframe": "Today" | "Tomorrow" | "Next Week"
+  }
+]`,
         },
         {
           role: "user",
-          content: `
-Deal: ${dealName}
-
-History:
-${memoryText}
-`,
+          content: `Deal: ${deal.name}\nHistory:\n${memoryText}`,
         },
       ],
-      temperature: 0.3,
-      max_tokens: 300,
+      temperature: 0.2,
+      response_format: { type: "json_object" }
     });
 
-    res.json({
-      recommendation:
-        completion.choices[0]?.message?.content ||
-        "No recommendation generated.",
-    });
+    let actions = [];
+    try {
+      const content = completion.choices[0]?.message?.content || "[]";
+      // Handle the case where groq returns an object with a property containing the array
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        actions = parsed;
+      } else if (parsed.actions && Array.isArray(parsed.actions)) {
+        actions = parsed.actions;
+      } else {
+        // Attempt to extract the first array found in the object
+        const firstArray = Object.values(parsed).find(Array.isArray);
+        if (firstArray) actions = firstArray;
+      }
+    } catch (e) {
+      console.error("JSON parse error:", e);
+    }
+
+    res.json(actions);
   } catch (err) {
     console.error("next-action error:", err);
     res.status(500).json({ error: err.message });
