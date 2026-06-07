@@ -5,6 +5,7 @@ import { apiGet } from "../api/apiClient";
 import { parseMemoryEntry } from "../utils/utils";
 import { staggerContainer, staggerItem } from "../theme/motion";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function TimelinePanel({ dealId, dealName }) {
   const [entries, setEntries] = useState([]);
@@ -99,7 +100,7 @@ export default function TimelinePanel({ dealId, dealName }) {
                   </div>
                 </div>
                 <div className="markdown-body" style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-                  <ReactMarkdown>{cleaned}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleaned}</ReactMarkdown>
                 </div>
               </div>
             </motion.div>

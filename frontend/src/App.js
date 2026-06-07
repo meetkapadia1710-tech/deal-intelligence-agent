@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Database, Sparkles } from "lucide-react";
+import { Plus, Database, Sparkles, Menu } from "lucide-react";
 import "./App.css";
 import { apiGet, apiPost } from "./api/apiClient";
 import Sidebar from "./components/Sidebar";
@@ -8,6 +8,7 @@ import ChatPanel from "./components/ChatPanel";
 import BeforeAfterPanel from "./components/BeforeAfterPanel";
 import TimelinePanel from "./components/TimelinePanel";
 import ReflectPanel from "./components/ReflectPanel";
+import AnalyticsPanel from "./components/AnalyticsPanel";
 import LogModal from "./components/LogModal";
 import NewDealModal from "./components/NewDealModal";
 import { Ripple } from "./components/ui/Ripple";
@@ -18,6 +19,7 @@ const TABS = [
   { key: "before-after", label: "Before & After" },
   { key: "timeline", label: "Timeline" },
   { key: "reflect", label: "Reflect" },
+  { key: "analytics", label: "Analytics" },
 ];
 
 export default function App() {
@@ -30,8 +32,15 @@ export default function App() {
   const [seedDone, setSeedDone] = useState(false);
   const [tab, setTab] = useState("chat");
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => { loadDeals(); }, []);
+  useEffect(() => {
+    loadDeals();
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   async function loadDeals() {
     const res = await apiGet("/deals");
@@ -80,8 +89,16 @@ export default function App() {
       <Sidebar
         deals={deals}
         activeDeal={activeDeal}
-        onSelectDeal={handleSelectDeal}
-        onNewDeal={() => setShowNewDeal(true)}
+        onSelectDeal={(d) => {
+          handleSelectDeal(d);
+          if (isMobile) setSidebarOpen(false);
+        }}
+        onNewDeal={() => {
+          setShowNewDeal(true);
+          if (isMobile) setSidebarOpen(false);
+        }}
+        isOpen={sidebarOpen || !isMobile}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="content-area">
@@ -132,11 +149,18 @@ export default function App() {
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
               <header className={`deal-header ${scrolled ? 'scrolled' : ''}`}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {isMobile && (
+                    <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+                      <Menu size={20} color="var(--text-primary)" />
+                    </button>
+                  )}
                   <h1 className="deal-name">{activeDeal.dealName}</h1>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 999, border: '1px solid var(--border)', fontFamily: 'var(--font-mono)' }}>
-                    {activeDeal.dealId}
-                  </span>
+                  {!isMobile && (
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 999, border: '1px solid var(--border)', fontFamily: 'var(--font-mono)' }}>
+                      {activeDeal.dealId}
+                    </span>
+                  )}
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -166,7 +190,7 @@ export default function App() {
                   
                   <button className="btn-primary pressable" onClick={() => setShowLog(true)}>
                     <Plus size={18} />
-                    Log Interaction
+                    {!isMobile && "Log Interaction"}
                     <Ripple />
                   </button>
                 </div>
@@ -203,6 +227,11 @@ export default function App() {
                     {tab === "reflect" && (
                       <div className="panel-container" onScroll={handleScroll}>
                         <ReflectPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                      </div>
+                    )}
+                    {tab === "analytics" && (
+                      <div className="panel-container" onScroll={handleScroll}>
+                        <AnalyticsPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
                       </div>
                     )}
                   </motion.div>

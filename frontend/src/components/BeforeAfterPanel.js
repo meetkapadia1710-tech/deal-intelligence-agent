@@ -5,6 +5,7 @@ import { apiPost } from "../api/apiClient";
 import { fadeThroughVariants, staggerContainer, staggerItem } from "../theme/motion";
 import { Ripple } from "./ui/Ripple";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const BA_EXAMPLES = [
   "What did the CFO say about pricing?",
@@ -136,7 +137,7 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
                   </div>
                 </div>
                 <div className="ba-text markdown-body">
-                  <ReactMarkdown>{result.noMem.answer}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.noMem.answer}</ReactMarkdown>
                 </div>
               </div>
               <div className="ba-col ba-col-good">
@@ -153,7 +154,7 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
                   </span>
                 </div>
                 <div className="ba-text markdown-body">
-                  <ReactMarkdown>{result.withMem.answer}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.withMem.answer}</ReactMarkdown>
                 </div>
               </div>
             </div>

@@ -793,5 +793,124 @@ body {
 .markdown-body strong { font-weight: 700; color: var(--text-primary); }
 .markdown-body em { font-style: italic; }
 
+.markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 14px; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; vertical-align: top; }
+.markdown-body th { background: rgba(255,255,255,0.05); font-weight: 600; color: var(--text-primary); }
+
 .ba-question-label { color: var(--text-muted); margin-right: var(--space-8); }
 .ba-question-text { font-weight: 600; font-style: italic; }
+
+/* ── Mobile Responsiveness ─────────────────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+}
+
+.mobile-menu-btn, .mobile-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+}
+
+.mobile-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .mobile-menu-btn, .mobile-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .deal-header {
+    padding: var(--space-16);
+    flex-wrap: wrap;
+    gap: var(--space-16);
+  }
+
+  .tab-group {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .tab-btn {
+    white-space: nowrap;
+  }
+
+  .panel-container {
+    padding: var(--space-24) var(--space-16);
+  }
+
+  .card-panel {
+    padding: var(--space-24);
+  }
+
+  .ba-columns {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ba-col {
+    min-height: auto;
+  }
+
+  .reflect-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: var(--space-12) !important;
+  }
+
+  div[style*="gridTemplateColumns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .deal-name {
+    font-size: 20px;
+  }
+
+  .empty-title {
+    font-size: 28px;
+  }
+
+  .empty-state {
+    padding: var(--space-24);
+  }
+
+  .empty-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .empty-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

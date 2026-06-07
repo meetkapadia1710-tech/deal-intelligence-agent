@@ -4,6 +4,7 @@ import { Send, Sparkles } from "lucide-react";
 import { apiPost } from "../api/apiClient";
 import { chatMsgUserVariants, chatMsgAgentVariants } from "../theme/motion";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function ChatMessage({ msg }) {
   const isUser = msg.role === "user";
@@ -33,7 +34,7 @@ function ChatMessage({ msg }) {
       </div>
       <div className="msg-bubble">
         <div className="msg-text markdown-body">
-          <ReactMarkdown>{msg.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
         </div>
       </div>
     </motion.div>

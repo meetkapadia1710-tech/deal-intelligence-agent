@@ -1,32 +1,50 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Folder, Plus, Hexagon, Cpu } from "lucide-react";
+import { Folder, Plus, Hexagon, Cpu, X } from "lucide-react";
 import { Ripple } from "./ui/Ripple";
 
-export default function Sidebar({ deals, activeDeal, onSelectDeal, onNewDeal }) {
+export default function Sidebar({ deals, activeDeal, onSelectDeal, onNewDeal, isOpen, onClose }) {
   return (
-    <motion.aside 
-      className="sidebar"
-      initial={{ width: 72 }}
-      animate={{ width: 280 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-    >
-      <div className="sidebar-header">
-        <div className="logo">
-          <div className="logo-icon-container">
-            <Hexagon size={18} color="#fff" />
-          </div>
+    <>
+      <AnimatePresence>
+        {isOpen && (
           <motion.div 
-            className="logo-text-group"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <span className="logo-text">Deal Intel</span>
-            <span className="logo-sub">AI Sales Memory</span>
-          </motion.div>
+            className="sidebar-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside 
+        className={`sidebar ${isOpen ? 'open' : ''}`}
+        initial={{ width: 72 }}
+        animate={{ width: 280 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        <div className="sidebar-header">
+          <div className="logo">
+            <div className="logo-icon-container">
+              <Hexagon size={18} color="#fff" />
+            </div>
+            <motion.div 
+              className="logo-text-group"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <span className="logo-text">Deal Intel</span>
+              <span className="logo-sub">AI Sales Memory</span>
+            </motion.div>
+          </div>
+          {isOpen && (
+            <button className="mobile-close-btn" onClick={onClose}>
+              <X size={20} />
+            </button>
+          )}
         </div>
-      </div>
 
       <div className="sidebar-section">
         <motion.p 
@@ -109,5 +127,6 @@ export default function Sidebar({ deals, activeDeal, onSelectDeal, onNewDeal }) 
         </div>
       </motion.div>
     </motion.aside>
+    </>
   );
 }

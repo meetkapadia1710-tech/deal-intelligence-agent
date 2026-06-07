@@ -5,6 +5,7 @@ import { apiPost } from "../api/apiClient";
 import { fadeThroughVariants } from "../theme/motion";
 import { Ripple } from "./ui/Ripple";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function ReflectPanel({ dealId, dealName }) {
   const [reflection, setReflection] = useState("");
@@ -106,7 +107,7 @@ export default function ReflectPanel({ dealId, dealName }) {
             style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 24, marginTop: 24 }}
           >
             <div className="markdown-body" style={{ fontSize: 15, color: 'var(--text-primary)' }}>
-              <ReactMarkdown>{reflection}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{reflection}</ReactMarkdown>
             </div>
           </motion.div>
         )}
