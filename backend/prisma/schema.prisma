@@ -10,25 +10,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Deal {
-  id          String   @id @default(cuid())
-  dealId      String   @unique
-  dealName    String
-  value       Int      @default(50000)
-  probability Int      @default(50)
-  riskLevel   String   @default("Medium")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  interactions Interaction[]
+model Organization {
+  id           String   @id @default(uuid())
+  name         String
+  vectorBankId String?
+  deals        Deal[]
 }
 
-model Interaction {
-  id          String   @id @default(cuid())
-  dealId      String
-  note        String
-  stakeholder String?
-  createdAt   DateTime @default(now())
+model Deal {
+  id             String   @id
+  organizationId String
+  clerkUserId    String?
+  name           String
+  value          Float    @default(50000)
+  probability    Int      @default(50)
+  riskLevel      String   @default("Medium")
+  createdAt      DateTime @default(now())
 
-  deal        Deal     @relation(fields: [dealId], references: [dealId], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id])
 }

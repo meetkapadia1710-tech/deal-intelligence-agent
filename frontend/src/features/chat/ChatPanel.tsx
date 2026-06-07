@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, MoreHorizontal, CheckCircle2 } from "lucide-react";
-import { apiPost } from "services/apiClient";
+import { apiPost, apiStream } from "services/apiClient";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { StreamingText } from "components/ui/StreamingText";
@@ -53,24 +53,70 @@ export default function ChatPanel({ messages, setMessages, activeDeal }: any) {
     const dealIdToUse = activeDeal ? activeDeal.dealId : "global";
     const dealNameToUse = activeDeal ? activeDeal.dealName : "Global Dashboard";
 
-    const res = await apiPost("/chat", {
-      dealId: dealIdToUse,
-      dealName: dealNameToUse,
-      question,
-    });
-    setLoading(false);
-    
-    // Trigger success glow
-    setSuccessPulse(true);
-    setTimeout(() => setSuccessPulse(false), 1500);
+    try {
+      const response = await apiStream("/chat", {
+        dealId: dealIdToUse,
+        dealName: dealNameToUse,
+        question,
+      });
 
-    setMessages((prev: any[]) => [
-      ...prev,
-      {
-        role: "agent",
-        content: res.answer || res.error || "Something went wrong.",
-      },
-    ]);
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error("Too Many Requests. Rate limit exceeded.");
+        }
+        throw new Error("Failed to send message.");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let streamedAnswer = "";
+
+      // Add placeholder agent message
+      setMessages((prev: any[]) => [...prev, { role: "agent", content: "" }]);
+      setLoading(false);
+      setSuccessPulse(true);
+      setTimeout(() => setSuccessPulse(false), 1500);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunkText = decoder.decode(value, { stream: true });
+          const lines = chunkText.split("\n");
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const dataStr = line.slice(6);
+              if (dataStr === "[DONE]") {
+                break;
+              }
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed.type === "chunk") {
+                  streamedAnswer += parsed.content;
+                  setMessages((prev: any[]) => {
+                    const newMessages = [...prev];
+                    newMessages[newMessages.length - 1].content = streamedAnswer;
+                    return newMessages;
+                  });
+                } else if (parsed.type === "meta") {
+                  // handle meta if needed
+                }
+              } catch (e) {
+                console.error("SSE parse error", e);
+              }
+            }
+          }
+        }
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setMessages((prev: any[]) => [
+        ...prev,
+        { role: "agent", content: err.message || "Something went wrong." },
+      ]);
+    }
   }
 
   const [showChatMenu, setShowChatMenu] = useState(false);

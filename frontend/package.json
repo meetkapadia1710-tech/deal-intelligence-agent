@@ -15,11 +15,12 @@
     "react-scripts": "5.0.1",
     "recharts": "^3.8.1",
     "remark-gfm": "^3.0.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "zustand": "^4.5.7"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
+    "start": "cross-env NODE_OPTIONS=--no-deprecation react-scripts start",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation react-scripts build"
   },
   "proxy": "http://localhost:3001",
   "browserslist": {
@@ -31,5 +32,8 @@
     "development": [
       "last 1 chrome version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

@@ -11,6 +11,7 @@ import AnalyticsPanel from "features/analytics/AnalyticsPanel";
 import ChatPanel from "features/chat/ChatPanel";
 import DealDetailsPanel from "features/deals/DealDetailsPanel";
 import { SignedIn, SignedOut, SignIn, useAuth } from "@clerk/clerk-react";
+import { useAppStore } from "store/useAppStore";
 import { setGlobalAuthTokenFn } from "services/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
 import { pageTransition } from "lib/motion";
@@ -22,24 +23,13 @@ export default function App() {
     setGlobalAuthTokenFn(() => getToken());
   }, [getToken]);
 
-  const [tab, setTab] = useState("dashboard");
-  const [messagesByDeal, setMessagesByDeal] = useState<Record<string, any[]>>({
-    global: [{
-      role: "agent",
-      content: "Hello Alex! I'm your DealAI Agent. How can I help you analyze your pipeline today?"
-    }]
-  });
-  const [activeDeal, setActiveDeal] = useState<any>(null);
-
+  const { tab, setTab, activeDeal, setActiveDeal, messagesByDeal, setMessages } = useAppStore();
+  
   const currentDealId = activeDeal?.dealId || 'global';
   const currentMessages = messagesByDeal[currentDealId] || [];
 
   const handleSetMessages = (action: any) => {
-    setMessagesByDeal(prev => {
-      const prevMsgs = prev[currentDealId] || [];
-      const updated = typeof action === 'function' ? action(prevMsgs) : action;
-      return { ...prev, [currentDealId]: updated };
-    });
+    setMessages(currentDealId, action);
   };
 
   return (

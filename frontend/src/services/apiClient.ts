@@ -20,6 +20,20 @@ export async function apiPost(path: string, body: any) {
   return r.json();
 }
 
+export async function apiStream(path: string, body: any) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (getGlobalTokenFn) {
+    const token = await getGlobalTokenFn();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  return fetch(`${API}/api${path}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+}
+
 export async function apiGet(path: string) {
   const headers: Record<string, string> = {};
   if (getGlobalTokenFn) {

@@ -12,67 +12,17 @@ export default function AnalyticsPanel({ dealId, dealName, inline }: any) {
     async function load() {
       setLoading(true);
       try {
-        let entries = [];
-        if (dealId) {
-          const res = await apiGet(`/timeline/${dealId}`);
-          entries = res.entries || [];
-        } else {
-          // Global mock data for when dealId is not provided
-          entries = [
-            { text: "pricing discount cost timeline security soc2 integration api competitor" },
-            { text: "timeline urgent security competitor vendor price" },
-            { text: "pricing cost timeline integration salesforce" },
-            { text: "security dpa msa integration api competitor vendor" }
-          ];
-        }
-        
         let velocity = [];
         let objections = [];
 
-        if (entries.length === 0) {
-          velocity = [
-            { name: "Week 1", interactions: 0 },
-            { name: "Week 2", interactions: 0 },
-            { name: "Week 3", interactions: 0 },
-            { name: "Week 4", interactions: 0 },
-          ];
-          objections = [
-            { subject: "Pricing", A: 0, fullMark: 100 },
-            { subject: "Timeline", A: 0, fullMark: 100 },
-            { subject: "Security", A: 0, fullMark: 100 },
-            { subject: "Integration", A: 0, fullMark: 100 },
-            { subject: "Competitor", A: 0, fullMark: 100 },
-          ];
+        if (dealId) {
+          const res = await apiGet(`/analytics/${dealId}`);
+          velocity = res.velocity || [];
+          objections = res.objections || [];
         } else {
-          // Real Data Generation based on timestamps
-          const now = new Date().getTime();
-          const oneWeek = 7 * 24 * 60 * 60 * 1000;
-          
-          let w1 = 0, w2 = 0, w3 = 0, w4 = 0;
-          entries.forEach((e: any) => {
-            const timeDiff = now - new Date(e.timestamp || e.createdAt || now).getTime();
-            if (timeDiff <= oneWeek) w4++;
-            else if (timeDiff <= 2 * oneWeek) w3++;
-            else if (timeDiff <= 3 * oneWeek) w2++;
-            else if (timeDiff <= 4 * oneWeek) w1++;
-          });
-
-          velocity = [
-            { name: "Week 1", interactions: w1 },
-            { name: "Week 2", interactions: w2 },
-            { name: "Week 3", interactions: w3 },
-            { name: "Week 4", interactions: w4 },
-          ];
-
-          // Objection Radar Data derived directly from text analysis of the memories
-          const text = entries.map((e: any) => (e.text || "").toLowerCase()).join(" ");
-          objections = [
-            { subject: "Pricing", A: Math.min((text.match(/price|pricing|discount|cost/g) || []).length * 25, 100), fullMark: 100 },
-            { subject: "Timeline", A: Math.min((text.match(/timeline|week|month|urgent/g) || []).length * 25, 100), fullMark: 100 },
-            { subject: "Security", A: Math.min((text.match(/security|soc2|dpa|msa|legal/g) || []).length * 25, 100), fullMark: 100 },
-            { subject: "Integration", A: Math.min((text.match(/api|integration|sap|salesforce/g) || []).length * 25, 100), fullMark: 100 },
-            { subject: "Competitor", A: Math.min((text.match(/competitor|other|vendor/g) || []).length * 25, 100), fullMark: 100 },
-          ];
+          const res = await apiGet(`/analytics/global`);
+          velocity = res.velocity || [];
+          objections = res.objections || [];
         }
 
         setData({ velocity, objections });
