@@ -3,14 +3,20 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { HindsightClient } from "@vectorize-io/hindsight-client";
 import Groq from "groq-sdk";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ── Clients ───────────────────────────────────────────────────────────────────
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, "../frontend/build")));
 
 const hindsight = new HindsightClient({
   baseUrl: process.env.HINDSIGHT_BASE_URL || "https://api.hindsight.vectorize.io",
@@ -359,6 +365,11 @@ app.get("/api/timeline/:dealId", async (req, res) => {
     console.error("timeline error:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Catch-all to serve the React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
