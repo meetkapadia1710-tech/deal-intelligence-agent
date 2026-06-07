@@ -75,7 +75,7 @@ Personalized, memory-grounded response
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/deal-intelligence-agent.git
+git clone https://github.com/meetkapadia1710-tech/deal-intelligence-agent.git
 cd deal-intelligence-agent
 
 # Backend
