@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, FileText, AlertTriangle, Users, ArrowRight, Loader2 } from "lucide-react";
-import { apiPost } from "../api/apiClient";
-import { fadeThroughVariants } from "../theme/motion";
-import { Ripple } from "./ui/Ripple";
+import { apiPost } from "services/apiClient";
+import { fadeThroughVariants } from "constants/motion";
+import { Ripple } from "components/ui/Ripple";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-export default function ReflectPanel({ dealId, dealName }) {
+export default function ReflectPanel({ dealId, dealName }: any) {
   const [reflection, setReflection] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeBtn, setActiveBtn] = useState(null);

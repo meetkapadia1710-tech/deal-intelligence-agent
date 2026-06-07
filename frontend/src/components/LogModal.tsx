@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
-import { apiPost } from "../api/apiClient";
-import { dialogVariants, backdropVariants } from "../theme/motion";
-import { Ripple } from "./ui/Ripple";
+import { apiPost } from "services/apiClient";
+import { dialogVariants, backdropVariants } from "constants/motion";
+import { Ripple } from "components/ui/Ripple";
 
 export default function LogModal({ dealId, dealName, onClose, onLogged }) {
   const [note, setNote] = useState("");
@@ -33,7 +33,7 @@ export default function LogModal({ dealId, dealName, onClose, onLogged }) {
     >
       <motion.div 
         className="modal" 
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: any) => e.stopPropagation()}
         variants={dialogVariants}
       >
         <div className="modal-header" style={{ marginBottom: 8 }}>
@@ -52,7 +52,7 @@ export default function LogModal({ dealId, dealName, onClose, onLogged }) {
             className="field-input"
             placeholder="e.g. Priya Sharma (CFO)"
             value={stakeholder}
-            onChange={(e) => setStakeholder(e.target.value)}
+            onChange={(e: any) => setStakeholder(e.target.value)}
           />
         </div>
         
@@ -62,7 +62,7 @@ export default function LogModal({ dealId, dealName, onClose, onLogged }) {
             className="field-textarea"
             placeholder="e.g. Call with Priya. She raised concerns about implementation timeline and asked for a 20% discount..."
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e: any) => setNote(e.target.value)}
             rows={5}
           />
         </div>

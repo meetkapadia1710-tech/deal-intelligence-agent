@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
-import { apiGet } from "../api/apiClient";
-import { staggerContainer, staggerItem } from "../theme/motion";
+import { apiGet } from "services/apiClient";
+import { staggerContainer, staggerItem } from "constants/motion";
 
-export default function AnalyticsPanel({ dealId, dealName }) {
+export default function AnalyticsPanel({ dealId, dealName }: any) {
   const [data, setData] = useState({ velocity: [], objections: [] });
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +34,7 @@ export default function AnalyticsPanel({ dealId, dealName }) {
         ];
 
         setData({ velocity, objections });
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
       } finally {
         setLoading(false);

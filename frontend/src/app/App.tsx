@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Database, Sparkles, Menu } from "lucide-react";
-import "./App.css";
-import { apiGet, apiPost } from "./api/apiClient";
-import Sidebar from "./components/Sidebar";
-import ChatPanel from "./components/ChatPanel";
-import BeforeAfterPanel from "./components/BeforeAfterPanel";
-import TimelinePanel from "./components/TimelinePanel";
-import ReflectPanel from "./components/ReflectPanel";
-import AnalyticsPanel from "./components/AnalyticsPanel";
-import LogModal from "./components/LogModal";
-import NewDealModal from "./components/NewDealModal";
-import { Ripple } from "./components/ui/Ripple";
-import { fadeThroughVariants, staggerContainer, staggerItem } from "./theme/motion";
+import "../App.css";
+import { apiGet, apiPost } from "services/apiClient";
+import Sidebar from "components/Sidebar";
+import ChatPanel from "features/chat/ChatPanel";
+import BeforeAfterPanel from "features/chat/BeforeAfterPanel";
+import TimelinePanel from "features/deals/TimelinePanel";
+import ReflectPanel from "features/reflection/ReflectPanel";
+import AnalyticsPanel from "features/analytics/AnalyticsPanel";
+import NextActionPanel from "features/deals/NextActionPanel";
+import LogModal from "components/LogModal";
+import NewDealModal from "components/NewDealModal";
+import { Ripple } from "components/ui/Ripple";
+import { fadeThroughVariants, staggerContainer, staggerItem } from "constants/motion";
 
 const TABS = [
   { key: "chat", label: "Chat" },
@@ -20,6 +21,7 @@ const TABS = [
   { key: "timeline", label: "Timeline" },
   { key: "reflect", label: "Reflect" },
   { key: "analytics", label: "Analytics" },
+  { key: "next-action", label: "Next Action" },
 ];
 
 export default function App() {
@@ -80,7 +82,7 @@ export default function App() {
   }
 
   // Handle scrolling for top bar blur
-  const handleScroll = (e) => {
+  const handleScroll = (e: any) => {
     setScrolled(e.target.scrollTop > 10);
   };
 
@@ -232,6 +234,11 @@ export default function App() {
                     {tab === "analytics" && (
                       <div className="panel-container" onScroll={handleScroll}>
                         <AnalyticsPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                      </div>
+                    )}
+                    {tab === "next-action" && (
+                      <div className="panel-container" onScroll={handleScroll}>
+                        <NextActionPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
                       </div>
                     )}
                   </motion.div>

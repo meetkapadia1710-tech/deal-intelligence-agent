@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Folder, Plus, Hexagon, Cpu, X } from "lucide-react";
-import { Ripple } from "./ui/Ripple";
+import { Ripple } from "components/ui/Ripple";
 
 export default function Sidebar({ deals, activeDeal, onSelectDeal, onNewDeal, isOpen, onClose }) {
   return (

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FileText, Loader2 } from "lucide-react";
-import { apiGet } from "../api/apiClient";
-import { parseMemoryEntry } from "../utils/utils";
-import { staggerContainer, staggerItem } from "../theme/motion";
+import { apiGet } from "services/apiClient";
+import { parseMemoryEntry } from "utils/index";
+import { staggerContainer, staggerItem } from "constants/motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-export default function TimelinePanel({ dealId, dealName }) {
+export default function TimelinePanel({ dealId, dealName }: any) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 

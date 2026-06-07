@@ -215,6 +215,70 @@ app.post("/api/reflect", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// POST /api/next-action
+app.post("/api/next-action", async (req, res) => {
+  const { dealId, dealName } = req.body;
+
+  if (!dealId) {
+    return res.status(400).json({ error: "dealId is required" });
+  }
+
+  try {
+    const memories = await hindsight.recall(
+      BANK_ID,
+      "objections stakeholders risks next steps",
+      {
+        tags: [dealId],
+        tagsMatch: "all_strict",
+        budget: "high",
+      }
+    );
+
+    const memoryText =
+      memories.results?.map((m) => m.text).join("\n---\n") ||
+      "No deal history available.";
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are a world-class enterprise sales coach.
+
+Analyze the deal history and provide:
+
+1. Recommended Next Action
+2. Why it matters
+3. Priority (High/Medium/Low)
+
+Be concise and actionable.
+`,
+        },
+        {
+          role: "user",
+          content: `
+Deal: ${dealName}
+
+History:
+${memoryText}
+`,
+        },
+      ],
+      temperature: 0.3,
+      max_tokens: 300,
+    });
+
+    res.json({
+      recommendation:
+        completion.choices[0]?.message?.content ||
+        "No recommendation generated.",
+    });
+  } catch (err) {
+    console.error("next-action error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/deals — list all deals tracked in memory
 app.get("/api/deals", (req, res) => {

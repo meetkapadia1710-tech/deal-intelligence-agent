@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { XCircle, CheckCircle2, ArrowRight, Loader2, RefreshCcw } from "lucide-react";
-import { apiPost } from "../api/apiClient";
-import { fadeThroughVariants, staggerContainer, staggerItem } from "../theme/motion";
-import { Ripple } from "./ui/Ripple";
+import { apiPost } from "services/apiClient";
+import { fadeThroughVariants, staggerContainer, staggerItem } from "constants/motion";
+import { Ripple } from "components/ui/Ripple";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -14,7 +14,7 @@ const BA_EXAMPLES = [
   "How should I prepare for the next call?",
 ];
 
-export default function BeforeAfterPanel({ dealId, dealName }) {
+export default function BeforeAfterPanel({ dealId, dealName }: any) {
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -60,7 +60,7 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
           >
             <p className="ba-examples-label" style={{ textAlign: 'center', marginBottom: 16 }}>Suggested questions</p>
             <motion.div className="ba-examples-grid" variants={staggerContainer} initial="initial" animate="animate">
-              {BA_EXAMPLES.map((e) => (
+              {BA_EXAMPLES.map((e: any) => (
                 <motion.button 
                   key={e} 
                   variants={staggerItem}
@@ -183,8 +183,8 @@ export default function BeforeAfterPanel({ dealId, dealName }) {
             className="ba-input"
             placeholder={`Ask anything about ${dealName}…`}
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCompare()}
+            onChange={(e: any) => setQuestion(e.target.value)}
+            onKeyDown={(e: any) => e.key === "Enter" && handleCompare()}
           />
           <button
             className="ba-submit-btn pressable"

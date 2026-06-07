@@ -51,7 +51,7 @@ export const fadeThroughVariants = {
     scale: 0.96,
     transition: { duration: DURATIONS.fast, ease: 'easeIn' }
   }
-};
+} as any;
 
 // 3. Staggered Container (Dashboards, Lists)
 export const staggerContainer = {
@@ -63,7 +63,7 @@ export const staggerContainer = {
       delayChildren: 0.1,
     }
   }
-};
+} as any;
 
 // Child item for staggered container (Slide up & fade)
 export const staggerItem = {
@@ -73,7 +73,7 @@ export const staggerItem = {
     y: 0,
     transition: { type: 'spring', ...SPRING }
   }
-};
+} as any;
 
 // Chat Message Variants
 export const chatMsgUserVariants = {
@@ -83,7 +83,7 @@ export const chatMsgUserVariants = {
     x: 0,
     transition: { duration: DURATIONS.medium, ease: 'easeOut' }
   }
-};
+} as any;
 
 export const chatMsgAgentVariants = {
   initial: { opacity: 0, y: 20, scale: 0.98 },
@@ -93,7 +93,7 @@ export const chatMsgAgentVariants = {
     scale: 1,
     transition: { type: 'spring', ...SPRING_SMOOTH }
   }
-};
+} as any;
 
 // Dialog Variants
 export const dialogVariants = {
@@ -110,11 +110,11 @@ export const dialogVariants = {
     y: 10,
     transition: { duration: DURATIONS.fast, ease: [0.4, 0, 1, 1] } 
   }
-};
+} as any;
 
 // Backdrop variants
 export const backdropVariants = {
   initial: { opacity: 0, backdropFilter: 'blur(0px)' },
   animate: { opacity: 1, backdropFilter: 'blur(8px)', transition: { duration: DURATIONS.medium } },
   exit: { opacity: 0, backdropFilter: 'blur(0px)', transition: { duration: DURATIONS.fast } }
-};
+} as any;

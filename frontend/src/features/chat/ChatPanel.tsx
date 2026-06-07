@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Sparkles } from "lucide-react";
-import { apiPost } from "../api/apiClient";
-import { chatMsgUserVariants, chatMsgAgentVariants } from "../theme/motion";
+import { apiPost } from "services/apiClient";
+import { chatMsgUserVariants, chatMsgAgentVariants } from "constants/motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -150,8 +150,8 @@ export default function ChatPanel({ activeDeal, messages, setMessages, onScroll 
             className="chat-input"
             placeholder={`Ask about ${activeDeal.dealName}…`}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+            onChange={(e: any) => setInput(e.target.value)}
+            onKeyDown={(e: any) => e.key === "Enter" && !e.shiftKey && handleSend()}
           />
           <button
             className="send-btn"

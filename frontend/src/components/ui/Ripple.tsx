@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 
 export const Ripple = ({ color = 'rgba(255, 255, 255, 0.3)' }) => {
   const [ripples, setRipples] = useState([]);

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Rocket } from "lucide-react";
-import { dialogVariants, backdropVariants } from "../theme/motion";
-import { Ripple } from "./ui/Ripple";
+import { dialogVariants, backdropVariants } from "constants/motion";
+import { Ripple } from "components/ui/Ripple";
 
 export default function NewDealModal({ onClose, onCreate }) {
   const [dealName, setDealName] = useState("");
@@ -28,7 +28,7 @@ export default function NewDealModal({ onClose, onCreate }) {
     >
       <motion.div 
         className="modal" 
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: any) => e.stopPropagation()}
         variants={dialogVariants}
       >
         <div className="modal-header" style={{ marginBottom: 8 }}>
@@ -47,7 +47,7 @@ export default function NewDealModal({ onClose, onCreate }) {
             className="field-input"
             placeholder="e.g. Acme Corp"
             value={dealName}
-            onChange={(e) => setDealName(e.target.value)}
+            onChange={(e: any) => setDealName(e.target.value)}
             autoFocus
           />
         </div>
@@ -58,7 +58,7 @@ export default function NewDealModal({ onClose, onCreate }) {
             className="field-input"
             placeholder="Auto-generated if blank"
             value={dealId}
-            onChange={(e) => setDealId(e.target.value)}
+            onChange={(e: any) => setDealId(e.target.value)}
           />
         </div>
         
