@@ -42,7 +42,7 @@ jest.unstable_mockModule("@vectorize-io/hindsight-client", () => {
   };
 });
 
-const { default: app } = await import("../server.ts");
+const { default: app } = await import("../server");
 
 describe("Deal API Endpoints", () => {
   it("GET /api/deals should return an array of deals", async () => {
