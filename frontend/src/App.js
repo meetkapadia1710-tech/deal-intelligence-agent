@@ -17,6 +17,28 @@ async function apiGet(path) {
   return r.json();
 }
 
+// Strip the [Deal: ...] [DealID: ...] [Stakeholder: ...] prefixes we embed on retain
+function parseMemoryEntry(entry) {
+  const raw = entry.text || "";
+  const stakeholderMatch = raw.match(/\[Stakeholder:\s*([^\]]+)\]/);
+  const stakeholder =
+    entry.metadata?.stakeholder ||
+    (stakeholderMatch ? stakeholderMatch[1].trim() : null);
+
+  const cleaned = raw
+    .replace(/\[Deal:[^\]]*\]/g, "")
+    .replace(/\[DealID:[^\]]*\]/g, "")
+    .replace(/\[Stakeholder:[^\]]*\]/g, "")
+    .trim();
+
+  const ts = entry.metadata?.timestamp || entry.mentioned_at || null;
+  const date = ts
+    ? new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : null;
+
+  return { stakeholder, cleaned, date, type: entry.type || "world", entities: entry.entities || [] };
+}
+
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
 function Sidebar({ deals, activeDeal, onSelectDeal, onNewDeal }) {
@@ -74,40 +96,157 @@ function ChatMessage({ msg }) {
   );
 }
 
-// ── Compare Message ───────────────────────────────────────────────────────────
+// ── Phase 4.1 — Before / After Panel ─────────────────────────────────────────
 
-function CompareMessage({ msg }) {
-  if (msg.role === "user") {
-    return (
-      <div className="msg msg-user">
-        <div className="msg-meta"><span className="msg-role">Rep</span></div>
-        <div className="msg-bubble"><pre className="msg-text">{msg.content}</pre></div>
-      </div>
-    );
+const BA_EXAMPLES = [
+  "What did the CFO say about pricing?",
+  "Draft a follow-up email for the key stakeholder",
+  "What are the main objections in this deal?",
+  "How should I prepare for the next call?",
+];
+
+function BeforeAfterPanel({ dealId, dealName }) {
+  const [question, setQuestion] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleCompare() {
+    if (!question.trim() || loading) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      // Two parallel calls: one with memory, one without
+      const [withMem, noMem] = await Promise.all([
+        apiPost("/chat", { dealId, dealName, question }),
+        apiPost("/chat-no-memory", { question }),
+      ]);
+      setResult({ withMem, noMem, question });
+    } finally {
+      setLoading(false);
+    }
   }
+
   return (
-    <div className="compare-msg">
-      <div className="compare-col compare-col-bad">
-        <div className="compare-col-header">
-          <span className="compare-icon-x">✗</span>
-          <span className="compare-label-bad">Without Memory</span>
-          <span className="compare-sub">Generic AI</span>
-        </div>
-        <pre className="compare-text">{msg.noMemory}</pre>
+    <div className="ba-panel">
+      <div className="ba-intro">
+        <p className="ba-intro-title">Before / After Memory</p>
+        <p className="ba-intro-sub">
+          Same question — answered by a generic AI with no context, and by the Deal Intelligence Agent
+          with full deal memory. The difference is the demo.
+        </p>
       </div>
-      <div className="compare-col compare-col-good">
-        <div className="compare-col-header">
-          <span className="compare-icon-check">✓</span>
-          <span className="compare-label-good">With Memory</span>
-          <span className="compare-badge">{msg.memoriesCount} memories recalled</span>
+
+      {/* Example prompts */}
+      {!result && !loading && (
+        <div className="ba-examples">
+          <p className="ba-examples-label">Suggested questions</p>
+          <div className="ba-examples-grid">
+            {BA_EXAMPLES.map((e) => (
+              <button key={e} className="ba-example-btn" onClick={() => setQuestion(e)}>
+                {e}
+              </button>
+            ))}
+          </div>
         </div>
-        <pre className="compare-text">{msg.withMemory}</pre>
+      )}
+
+      {/* Loading state — both columns */}
+      {loading && (
+        <div className="ba-columns">
+          <div className="ba-col ba-col-bad">
+            <div className="ba-col-header">
+              <span className="ba-icon-x">✗</span>
+              <div>
+                <div className="ba-col-label ba-label-bad">Without Memory</div>
+                <div className="ba-col-sub">Generic AI</div>
+              </div>
+            </div>
+            <div className="ba-loading-inner">
+              <span className="dot" /><span className="dot" /><span className="dot" />
+            </div>
+          </div>
+          <div className="ba-col ba-col-good">
+            <div className="ba-col-header">
+              <span className="ba-icon-check">✓</span>
+              <div>
+                <div className="ba-col-label ba-label-good">With Memory</div>
+                <div className="ba-col-sub">Deal Intelligence Agent</div>
+              </div>
+            </div>
+            <div className="ba-loading-inner">
+              <span className="dot" /><span className="dot" /><span className="dot" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {result && !loading && (
+        <>
+          <div className="ba-question-row">
+            <span className="ba-question-label">Question asked:</span>
+            <span className="ba-question-text">"{result.question}"</span>
+          </div>
+          <div className="ba-columns">
+            <div className="ba-col ba-col-bad">
+              <div className="ba-col-header">
+                <span className="ba-icon-x">✗</span>
+                <div>
+                  <div className="ba-col-label ba-label-bad">Without Memory</div>
+                  <div className="ba-col-sub">Generic AI — no deal context</div>
+                </div>
+              </div>
+              <pre className="ba-text">{result.noMem.answer}</pre>
+            </div>
+            <div className="ba-col ba-col-good">
+              <div className="ba-col-header">
+                <span className="ba-icon-check">✓</span>
+                <div>
+                  <div className="ba-col-label ba-label-good">With Memory</div>
+                  <div className="ba-col-sub">
+                    {result.withMem.memoriesCount} memories recalled · {dealName}
+                  </div>
+                </div>
+                <span className="ba-mem-badge">{result.withMem.memoriesCount} recalled</span>
+              </div>
+              <pre className="ba-text">{result.withMem.answer}</pre>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Input */}
+      <div className="ba-input-area">
+        {result && (
+          <button
+            className="ba-reset-btn"
+            onClick={() => { setResult(null); setQuestion(""); }}
+          >
+            ← Try another question
+          </button>
+        )}
+        <div className="ba-input-row">
+          <input
+            className="ba-input"
+            placeholder={`Ask anything about ${dealName}…`}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCompare()}
+          />
+          <button
+            className="ba-submit-btn"
+            onClick={handleCompare}
+            disabled={!question.trim() || loading}
+          >
+            Compare →
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Timeline Panel ────────────────────────────────────────────────────────────
+// ── Phase 4.2 — Memory Timeline Panel ────────────────────────────────────────
 
 function TimelinePanel({ dealId, dealName }) {
   const [entries, setEntries] = useState([]);
@@ -131,7 +270,7 @@ function TimelinePanel({ dealId, dealName }) {
   if (entries.length === 0) {
     return (
       <div className="timeline-status">
-        No interactions stored yet. Log some interactions first.
+        No interactions stored yet. Log some and they'll appear here.
       </div>
     );
   }
@@ -139,40 +278,44 @@ function TimelinePanel({ dealId, dealName }) {
   return (
     <div className="timeline-panel">
       <div className="timeline-header">
-        <span className="timeline-title">Deal Diary — {dealName}</span>
-        <span className="timeline-count">{entries.length} memories stored</span>
+        <div>
+          <p className="timeline-title">Deal Diary — {dealName}</p>
+          <p className="timeline-subtitle">Every interaction stored in Hindsight memory</p>
+        </div>
+        <span className="timeline-count">{entries.length} memories</span>
       </div>
+
       <div className="timeline-list">
-        {entries.map((entry, i) => (
-          <div key={entry.id || i} className="timeline-item">
-            <div className="timeline-spine">
-              <div className="timeline-dot" />
-              {i < entries.length - 1 && <div className="timeline-line" />}
-            </div>
-            <div className="timeline-content">
-              <div className="timeline-meta">
-                <span className={`timeline-type type-${entry.type || "world"}`}>
-                  {entry.type || "world fact"}
-                </span>
-                {entry.mentioned_at && (
-                  <span className="timeline-date">
-                    {new Date(entry.mentioned_at).toLocaleDateString("en-US", {
-                      month: "short", day: "numeric", year: "numeric",
-                    })}
-                  </span>
+        {entries.map((entry, i) => {
+          const { stakeholder, cleaned, date, type, entities } = parseMemoryEntry(entry);
+          return (
+            <div key={entry.id || i} className="timeline-item">
+              <div className="timeline-spine">
+                <div className="timeline-dot" />
+                {i < entries.length - 1 && <div className="timeline-line" />}
+              </div>
+              <div className="timeline-content">
+                <div className="timeline-top">
+                  {stakeholder && (
+                    <span className="timeline-stakeholder">{stakeholder}</span>
+                  )}
+                  <div className="timeline-tags">
+                    <span className={`timeline-type type-${type}`}>{type}</span>
+                    {date && <span className="timeline-date">{date}</span>}
+                  </div>
+                </div>
+                <pre className="timeline-text">{cleaned}</pre>
+                {entities.length > 0 && (
+                  <div className="timeline-entities">
+                    {entities.map((e) => (
+                      <span key={e} className="entity-tag">{e}</span>
+                    ))}
+                  </div>
                 )}
               </div>
-              <pre className="timeline-text">{entry.text}</pre>
-              {entry.entities?.length > 0 && (
-                <div className="timeline-entities">
-                  {entry.entities.map((e) => (
-                    <span key={e} className="entity-tag">{e}</span>
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -191,7 +334,7 @@ function ReflectPanel({ dealId, dealName }) {
     setReflection("");
     const prompts = {
       summary: `For the deal "${dealName}", provide: 1) Top objections raised and by whom, 2) All stakeholders and their roles/concerns, 3) Current deal status and risks, 4) Recommended next 3 actions`,
-      objections: `What are the top recurring objections raised in the "${dealName}" deal? Who raised them and how many times? What's the best counter-argument for each?`,
+      objections: `What are the top recurring objections raised in the "${dealName}" deal? Who raised them and how many times? What is the best counter-argument for each?`,
       stakeholders: `List all stakeholders mentioned in the "${dealName}" deal. For each person: their name, role, main concern, and sentiment toward the deal.`,
       nextSteps: `Based on the full deal history for "${dealName}", what are the 3 most important next steps the sales rep should take right now to move this deal forward?`,
     };
@@ -301,7 +444,9 @@ function NewDealModal({ onClose, onCreate }) {
 
   function handleCreate() {
     if (!dealName.trim()) return;
-    const id = dealId.trim() || dealName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now().toString(36);
+    const id =
+      dealId.trim() ||
+      dealName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now().toString(36);
     onCreate({ dealId: id, dealName: dealName.trim() });
     onClose();
   }
@@ -338,6 +483,13 @@ function NewDealModal({ onClose, onCreate }) {
 
 // ── Main App ──────────────────────────────────────────────────────────────────
 
+const TABS = [
+  { key: "chat", label: "Chat" },
+  { key: "before-after", label: "Before / After" },
+  { key: "timeline", label: "Timeline" },
+  { key: "reflect", label: "Reflect" },
+];
+
 export default function App() {
   const [deals, setDeals] = useState([]);
   const [activeDeal, setActiveDeal] = useState(null);
@@ -349,11 +501,12 @@ export default function App() {
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
   const [tab, setTab] = useState("chat");
-  const [compareMode, setCompareMode] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => { loadDeals(); }, []);
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function loadDeals() {
     const res = await apiGet("/deals");
@@ -376,51 +529,32 @@ export default function App() {
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setLoading(true);
 
-    if (compareMode) {
-      const res = await apiPost("/compare", {
-        dealId: activeDeal.dealId,
-        dealName: activeDeal.dealName,
-        question,
-      });
-      setLoading(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "compare",
-          noMemory: res.noMemory || res.error,
-          withMemory: res.withMemory || res.error,
-          memoriesCount: res.memoriesCount || 0,
-        },
-      ]);
-    } else {
-      const res = await apiPost("/chat", {
-        dealId: activeDeal.dealId,
-        dealName: activeDeal.dealName,
-        question,
-      });
-      setLoading(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "agent",
-          content: res.answer || res.error || "Something went wrong.",
-          memoryUsed: res.memoryUsed,
-          memoriesCount: res.memoriesCount,
-        },
-      ]);
-    }
+    const res = await apiPost("/chat", {
+      dealId: activeDeal.dealId,
+      dealName: activeDeal.dealName,
+      question,
+    });
+    setLoading(false);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "agent",
+        content: res.answer || res.error || "Something went wrong.",
+        memoryUsed: res.memoryUsed,
+        memoriesCount: res.memoriesCount,
+      },
+    ]);
   }
 
   function handleSelectDeal(deal) {
     setActiveDeal(deal);
     setMessages([{
       role: "agent",
-      content: `Deal loaded: ${deal.dealName}\n\nI have full memory of every interaction. Ask anything — or enable ⚡ Compare Mode to show judges the difference memory makes.`,
+      content: `Deal loaded: ${deal.dealName}\n\nI have full memory of every interaction. Ask anything in Chat — or go to Before / After to see the dramatic difference memory makes.`,
       memoryUsed: false,
       memoriesCount: 0,
     }]);
     setTab("chat");
-    setCompareMode(false);
   }
 
   function handleNewDeal(deal) {
@@ -471,7 +605,7 @@ export default function App() {
               </button>
             </div>
             <p className="empty-hint">
-              Demo data includes 2 deals (Acme Corp + Globex Industries) with realistic interactions, objections, and stakeholders.
+              Demo data: 2 deals (Acme Corp + Globex Industries) with realistic interactions, objections, and stakeholders.
             </p>
           </div>
         ) : (
@@ -483,11 +617,7 @@ export default function App() {
               </div>
               <div className="deal-header-right">
                 <div className="tab-group">
-                  {[
-                    { key: "chat", label: "Chat" },
-                    { key: "timeline", label: "Timeline" },
-                    { key: "reflect", label: "Reflect" },
-                  ].map((t) => (
+                  {TABS.map((t) => (
                     <button
                       key={t.key}
                       className={`tab-btn ${tab === t.key ? "active" : ""}`}
@@ -506,11 +636,9 @@ export default function App() {
             {tab === "chat" && (
               <div className="chat-area">
                 <div className="messages">
-                  {messages.map((m, i) =>
-                    m.role === "compare"
-                      ? <CompareMessage key={i} msg={m} />
-                      : <ChatMessage key={i} msg={m} />
-                  )}
+                  {messages.map((m, i) => (
+                    <ChatMessage key={i} msg={m} />
+                  ))}
                   {loading && (
                     <div className="msg msg-agent">
                       <div className="msg-meta"><span className="msg-role">Agent</span></div>
@@ -521,35 +649,18 @@ export default function App() {
                   )}
                   <div ref={bottomRef} />
                 </div>
-
                 <div className="input-bar">
-                  <div className="input-bar-top">
-                    <div className="quick-prompts">
-                      {quickPrompts.map((p) => (
-                        <button key={p} className="quick-btn" onClick={() => setInput(p)}>{p}</button>
-                      ))}
-                    </div>
-                    <button
-                      className={`compare-toggle ${compareMode ? "compare-toggle-on" : ""}`}
-                      onClick={() => setCompareMode(!compareMode)}
-                      title="Show side-by-side: Generic AI vs Deal Intelligence Agent"
-                    >
-                      ⚡ {compareMode ? "Compare ON" : "Compare"}
-                    </button>
+                  <div className="quick-prompts">
+                    {quickPrompts.map((p) => (
+                      <button key={p} className="quick-btn" onClick={() => setInput(p)}>
+                        {p}
+                      </button>
+                    ))}
                   </div>
-                  {compareMode && (
-                    <div className="compare-hint">
-                      Compare mode: each answer shows Generic AI (no memory) vs Deal Intel Agent (with memory)
-                    </div>
-                  )}
                   <div className="input-row">
                     <input
-                      className={`chat-input ${compareMode ? "chat-input-compare" : ""}`}
-                      placeholder={
-                        compareMode
-                          ? `Ask to compare — e.g. "What did the CFO say about pricing?"`
-                          : `Ask about ${activeDeal.dealName}…`
-                      }
+                      className="chat-input"
+                      placeholder={`Ask about ${activeDeal.dealName}…`}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
@@ -566,15 +677,30 @@ export default function App() {
               </div>
             )}
 
+            {tab === "before-after" && (
+              <div className="reflect-area">
+                <BeforeAfterPanel
+                  dealId={activeDeal.dealId}
+                  dealName={activeDeal.dealName}
+                />
+              </div>
+            )}
+
             {tab === "timeline" && (
               <div className="reflect-area">
-                <TimelinePanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                <TimelinePanel
+                  dealId={activeDeal.dealId}
+                  dealName={activeDeal.dealName}
+                />
               </div>
             )}
 
             {tab === "reflect" && (
               <div className="reflect-area">
-                <ReflectPanel dealId={activeDeal.dealId} dealName={activeDeal.dealName} />
+                <ReflectPanel
+                  dealId={activeDeal.dealId}
+                  dealName={activeDeal.dealName}
+                />
               </div>
             )}
           </>

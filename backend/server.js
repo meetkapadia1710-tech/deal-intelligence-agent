@@ -149,6 +149,37 @@ Format responses clearly — use bullet points for lists, bold for key names.`,
   }
 });
 
+// POST /api/chat-no-memory — Groq only, zero deal context (for Before/After comparison)
+// Body: { question }
+app.post("/api/chat-no-memory", async (req, res) => {
+  const { question } = req.body;
+  if (!question) {
+    return res.status(400).json({ error: "question is required" });
+  }
+  try {
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: "You are a generic sales assistant. You have no knowledge of any specific deals, customers, or past conversations. Answer using general sales knowledge only.",
+        },
+        { role: "user", content: question },
+      ],
+      temperature: 0.7,
+      max_tokens: 400,
+    });
+    res.json({
+      answer: completion.choices[0]?.message?.content || "No response.",
+      memoryUsed: false,
+      memoriesCount: 0,
+    });
+  } catch (err) {
+    console.error("chat-no-memory error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/reflect — Hindsight reflect for pattern analysis
 // Body: { dealId, dealName, prompt }
 app.post("/api/reflect", async (req, res) => {

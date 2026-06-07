@@ -946,3 +946,296 @@ body {
   border-color: var(--accent-border) !important;
   color: var(--accent2) !important;
 }
+
+/* ── Before / After Panel ──────────────────────────────────────────────────── */
+.ba-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1100px;
+}
+
+.ba-intro {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+}
+
+.ba-intro-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+
+.ba-intro-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.ba-examples {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+
+.ba-examples-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.ba-examples-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ba-example-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+
+.ba-example-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent2);
+  background: var(--accent-bg);
+}
+
+.ba-question-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.ba-question-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ba-question-text {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+}
+
+/* ── Two-column result layout ──────────────────────────────────────────────── */
+.ba-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ba-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+
+.ba-col-bad {
+  background: rgba(239, 68, 68, 0.04);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.ba-col-good {
+  background: rgba(34, 197, 94, 0.04);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+.ba-col-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ba-icon-x {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--red);
+  line-height: 1;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.ba-icon-check {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.ba-col-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ba-label-bad { color: var(--red); }
+.ba-label-good { color: var(--green); }
+
+.ba-col-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+}
+
+.ba-mem-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 4px;
+  padding: 2px 7px;
+  margin-left: auto;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.ba-text {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.75;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ba-loading-inner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 0;
+}
+
+/* ── Before/After input area ───────────────────────────────────────────────── */
+.ba-input-area {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ba-reset-btn {
+  background: none;
+  border: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.ba-reset-btn:hover { color: var(--text2); }
+
+.ba-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ba-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.ba-input::placeholder { color: var(--text3); }
+.ba-input:focus { border-color: var(--accent-border); }
+
+.ba-submit-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ba-submit-btn:hover:not(:disabled) { background: var(--accent2); }
+.ba-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Timeline improvements ─────────────────────────────────────────────────── */
+.timeline-subtitle {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+.timeline-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.timeline-stakeholder {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.timeline-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.timeline-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
