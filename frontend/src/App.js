@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
-
+import NextActionPanel from "./components/NextActionPanel";
 const API = "";
 
 async function apiPost(path, body) {
@@ -485,9 +485,11 @@ function NewDealModal({ onClose, onCreate }) {
 
 const TABS = [
   { key: "chat", label: "Chat" },
-  { key: "before-after", label: "Before / After" },
+  { key: "before-after", label: "Before & After" },
   { key: "timeline", label: "Timeline" },
   { key: "reflect", label: "Reflect" },
+  { key: "analytics", label: "Analytics" },
+  { key: "next-action", label: "Next Action" },
 ];
 
 export default function App() {
@@ -703,6 +705,14 @@ export default function App() {
                 />
               </div>
             )}
+            {tab === "next-action" && (
+             <div className="panel-container">
+             <NextActionPanel
+              dealId={activeDeal.dealId}
+            dealName={activeDeal.dealName}
+    />
+  </div>
+)}
           </>
         )}
       </main>
