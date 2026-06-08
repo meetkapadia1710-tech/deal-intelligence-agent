@@ -8,6 +8,14 @@ DealAI Agent is a next-generation Deal Intelligence Platform designed to solve a
 
 Powered by **Vectorize Hindsight** for infinite semantic memory and **Groq** for instantaneous reasoning, the platform automatically tracks interactions, maps stakeholders, uncovers objection patterns, and recommends optimal next actions to move deals forward.
 
+## 🚀 Live Demo
+
+**Experience the platform here:** [https://deal-intelligence-web.onrender.com/](https://deal-intelligence-web.onrender.com/)
+
+> [!WARNING]
+> **Cold Boot Delay:** This application is deployed on Render's Free Tier. If the application hasn't been used in the last 15 minutes, the backend server goes to sleep. **It may take up to 60 seconds to wake up** on your first interaction (such as logging in or clicking "Load Demo Data"). Please be patient during the first load!
+
+
 ## Key Features
 
 - **Global Intelligence Dashboard:** Gain a high-level view of your pipeline value, average close probability, and high-risk deals, complete with a dynamic AI-driven intelligence feed.
