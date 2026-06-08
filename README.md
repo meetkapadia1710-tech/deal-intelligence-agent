@@ -1,12 +1,7 @@
-# DealAI Agent 🧠
+# DealAI Agent 🧠 — HackBaroda Submission
 
-> Close Deals Faster with Autonomous AI Memory. DealAI Agent automatically synthesizes your meetings, uncovers hidden risks, and tells you exactly what to do next.
-
-## Overview
-
-DealAI Agent is a next-generation Deal Intelligence Platform designed to solve a critical problem in sales: losing context between calls. 
-
-Powered by **Vectorize Hindsight** for infinite semantic memory and **Groq** for instantaneous reasoning, the platform automatically tracks interactions, maps stakeholders, uncovers objection patterns, and recommends optimal next actions to move deals forward.
+> **Close Deals Faster with Autonomous AI Memory.**
+> DealAI Agent automatically synthesizes your meetings, uncovers hidden risks, and tells you exactly what to do next based on deep historical context.
 
 ## 🚀 Live Demo
 
@@ -15,30 +10,44 @@ Powered by **Vectorize Hindsight** for infinite semantic memory and **Groq** for
 > [!WARNING]
 > **Cold Boot Delay:** This application is deployed on Render's Free Tier. If the application hasn't been used in the last 15 minutes, the backend server goes to sleep. **It may take up to 60 seconds to wake up** on your first interaction (such as logging in or clicking "Load Demo Data"). Please be patient during the first load!
 
+---
 
-## Key Features
+## 🏆 Hackathon Alignment: Why This Matters
 
-- **Global Intelligence Dashboard:** Gain a high-level view of your pipeline value, average close probability, and high-risk deals, complete with a dynamic AI-driven intelligence feed.
-- **Active Deal Tracking:** Track individual deals, risks, and next actions.
-- **Semantic Deal Memory:** Log interactions (notes, call transcripts) and allow the Hindsight agent to automatically extract facts, stakeholders, and objections.
-- **Agentic Chat:** Ask the agent questions about any deal ("What did the CFO say about pricing?") and receive answers instantly grounded in your specific deal context.
-- **Automated Reflection:** Instantly generate objection pattern reports, stakeholder maps, and health analyses across all historical interactions.
+This project was explicitly built to address the **HackBaroda** criteria:
 
-## Architecture
+### 1. Solving a Real Business Problem
+B2B Sales teams lose massive amounts of context between calls. Turnover, long sales cycles, and context-switching mean reps forget exactly what a stakeholder objected to 3 weeks ago. 
+**The Solution:** An AI sales assistant that never forgets. It remembers every objection a prospect raised across calls, maps stakeholders, and drafts personalized follow-ups. *This is a tool organizations would readily pay $50/month for.*
+
+### 2. Making Memory the Star (Powered by Hindsight)
+Stateless chatbots are useless for long-term sales cycles. DealAI puts **Vectorize Hindsight** at the absolute center of the architecture.
+* **Before Memory:** The AI gives generic sales advice ("Be polite, offer a discount").
+* **After Memory:** The AI gives hyper-specific advice grounded in historical facts ("Priya Sharma from Procurement previously objected to the 20% markup; address the ROI justification she asked for on Tuesday"). 
+* *Check out our "Memory Compare" feature in the app to see the stark Before/After difference!*
+
+### 3. The 60-Second Demo
+We built this to show instant value. In less than 60 seconds, a judge can:
+1. Log in.
+2. Click **"Load Demo Data"** to instantly populate the Hindsight memory bank with realistic sales transcripts.
+3. Open the **"Agent Reasoning"** tab to ask a question and instantly see the Hindsight memory recall in action.
+
+---
+
+## 🏗️ Architecture & Tech Stack
 
 At its core, DealAI decouples memory from reasoning for maximum performance and accuracy:
 
 1. **Memory Layer (Hindsight):** Retains facts from sales interactions and recalls them via semantic search.
-2. **Reasoning Layer (Groq):** Synthesizes recalled context using `llama-3.3-70b-versatile` to provide actionable insights.
+2. **Reasoning Layer (Groq):** Synthesizes recalled context using `llama-3.3-70b-versatile` to provide actionable insights at lightning speed.
 3. **Application Layer:** React 18, Zustand, and Express/Prisma orchestrate the user experience.
 
-## Tech Stack
-
-- **Frontend:** React 18, TypeScript, Zustand, Framer Motion, Recharts, Clerk Auth
+- **Frontend:** React 18, TypeScript, Tailwind, Recharts, Clerk Auth
 - **Backend:** Node.js, Express, TypeScript, Prisma (SQLite)
-- **AI Services:** Hindsight (Memory Bank), Groq (LLM Inference)
 
-## Getting Started
+---
+
+## 💻 Getting Started (Local Development)
 
 ### Prerequisites
 
@@ -53,10 +62,8 @@ At its core, DealAI decouples memory from reasoning for maximum performance and 
 git clone https://github.com/meetkapadia1710-tech/deal-intelligence-agent.git
 cd deal-intelligence-agent
 
-# Install Backend dependencies
+# Install Backend & Frontend dependencies
 cd backend && npm install
-
-# Install Frontend dependencies
 cd ../frontend && npm install
 ```
 
@@ -67,13 +74,16 @@ cd ../frontend && npm install
 HINDSIGHT_API_KEY=your_hindsight_api_key
 HINDSIGHT_BASE_URL=https://api.hindsight.vectorize.io
 GROQ_API_KEY=your_groq_api_key
-DATABASE_URL="file:./dev.db"
+CLERK_SECRET_KEY=your_clerk_secret
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable
+DATABASE_URL="file:./prod.db"
 PORT=3001
 ```
 
 **Frontend (`frontend/.env`):**
 ```env
 REACT_APP_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+REACT_APP_API_URL=http://localhost:3001
 ```
 
 ### 3. Database Initialization
@@ -96,18 +106,19 @@ npm start
 ```
 
 Navigate to `http://localhost:3000`. 
-
 *Note: Once logged in, navigate to Global Intelligence and click "Load Demo Data" to seed realistic interactions.*
 
-## API Reference
+---
 
-The backend exposes a RESTful API powered by Express:
+## 📡 API Reference
+
+The backend exposes a RESTful API powered by Express, securely protected by Clerk:
 
 - `GET /api/deals` - Retrieve all active deals
-- `POST /api/interactions` - Log a new interaction (note/transcript)
+- `POST /api/interactions` - Log a new interaction (note/transcript) into Hindsight
 - `GET /api/interactions/:dealId/context` - Retrieve all raw context for a deal
-- `POST /api/chat` - Interact with the memory-grounded agent
+- `POST /api/chat` - Interact with the memory-grounded agent using Groq + Hindsight
+- `POST /api/compare` - Compare responses With vs Without Hindsight Memory
 - `POST /api/reflect` - Trigger a Hindsight reflection report
-- `GET /api/timeline/:dealId` - View chronological deal history
-- `GET /api/next-action/:dealId` - Synthesize the next best action
+- `GET /api/analytics/:dealId` - View objection velocity and analytics
 - `POST /api/seed` - Seed demo data into the SQLite database and Hindsight memory bank
