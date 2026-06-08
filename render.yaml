@@ -4,7 +4,7 @@ services:
     name: deal-intelligence-api
     env: node
     region: ohio
-    plan: starter # A paid plan is required for Persistent Disks
+    plan: free
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -13,9 +13,8 @@ services:
         value: production
       - key: PORT
         value: "3001"
-      # SQLite DB needs to point to the persistent disk path
       - key: DATABASE_URL
-        value: "file:/var/data/prod.db"
+        value: "file:./prod.db"
       # These must be filled in the Render Dashboard
       - key: HINDSIGHT_API_KEY
         sync: false
@@ -23,11 +22,6 @@ services:
         value: "https://api.hindsight.vectorize.io"
       - key: GROQ_API_KEY
         sync: false
-    # Attach a persistent disk for SQLite so data survives deploys
-    disk:
-      name: deal-intelligence-data
-      mountPath: /var/data
-      sizeGB: 1
 
   # FRONTEND SERVICE
   - type: web
