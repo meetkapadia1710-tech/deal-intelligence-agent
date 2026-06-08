@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx server.ts",
-    "dev": "tsx watch server.ts"
+    "dev": "tsx watch server.ts",
+    "build": "npx prisma generate && npx prisma db push"
   },
   "dependencies": {
     "@clerk/express": "^2.1.23",

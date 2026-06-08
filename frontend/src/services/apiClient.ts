@@ -1,4 +1,4 @@
-const API = "";
+const API = process.env.REACT_APP_API_URL || "";
 
 let getGlobalTokenFn: (() => Promise<string | null>) | null = null;
 export const setGlobalAuthTokenFn = (fn: () => Promise<string | null>) => {
