@@ -22,6 +22,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check BEFORE Clerk to ensure it doesn't crash from Auth issues
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use(clerkMiddleware());
 
 // Serve static files from the React frontend app
@@ -41,10 +46,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
-});
 
 // Protect all other API routes with Clerk
 app.all("/api/*", requireAuth());
