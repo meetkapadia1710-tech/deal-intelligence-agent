@@ -1,5 +1,7 @@
 # DealAI Agent 🧠 — HackBaroda Submission
 
+[![RepoGrade](https://repo-grade-web.vercel.app/api/badge/meetkapadia1710-tech/deal-intelligence-agent)](https://repo-grade-web.vercel.app/gh/meetkapadia1710-tech/deal-intelligence-agent)
+
 > **Close Deals Faster with Autonomous AI Memory.**
 > DealAI Agent automatically synthesizes your meetings, uncovers hidden risks, and tells you exactly what to do next based on deep historical context.
 
